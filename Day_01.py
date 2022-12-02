@@ -33,7 +33,6 @@ def part_two(filename):
     elf_list = parse_data(data)
     elf_list.sort(reverse=True)
     top_three_elves = elf_list[0] + elf_list[1] + elf_list[2]
-    print(top_three_elves, elf_list)
     return top_three_elves
 
 
