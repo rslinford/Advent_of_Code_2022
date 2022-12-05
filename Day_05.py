@@ -78,7 +78,7 @@ class StackArray:
     def get_top_crates(self):
         rval = ''
         for stack in self.stacks:
-            rval += stack[-1]
+            rval += str(stack[-1])
         return rval
 
     def follow_instructions(self, data):
@@ -87,7 +87,16 @@ class StackArray:
             self.follow_instruction(line)
 
     def follow_instruction(self, line):
-        pass
+        result = re.search('^move (\d+) from (\d+) to (\d+)$', line)
+        move_count = int(result.group(1))
+        from_stack = self.stacks[int(result.group(2)) - 1]
+        to_stack = self.stacks[int(result.group(3)) - 1]
+        # print(f'Before move\n{self}')
+        for i in range(move_count):
+            # print(move_count, from_stack, to_stack)
+            crate = from_stack.pop()
+            to_stack.append(crate)
+        # print(f'After move\n{self}')
 
 
 def part_one(filename):
@@ -103,8 +112,8 @@ print(f'Answer part one: {part_one(filename)}')
 
 
 class Test(unittest.TestCase):
-    # def test_part_two(self):
-    #     self.assertEqual('CMZ', part_one('Day_05_short_input.txt'))
+    def test_part_two(self):
+        self.assertEqual('CMZ', part_one('Day_05_short_input.txt'))
 
     def test_read_puzzle_input(self):
         data = read_puzzle_input('Day_05_short_input.txt')
