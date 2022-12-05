@@ -23,11 +23,37 @@ def determine_number_of_stacks(data: str) -> int:
 
 
 class StackArray:
-    pass
+    def __init__(self, number_of_stacks):
+        self.stacks = []
+        for i in range(number_of_stacks):
+            self.stacks.append([])
 
+    def __repr__(self):
+        
+        rval = []
+        s = ''
+        for i in range(len(self.stacks)):
+            s += ' ' + str(i+1) + ' '
+        rval.append(s)
+        return ''.join(rval)
+    
+    def max_stack_height(self):
+        max = 0
+        for stack in self.stacks:
+            if len(stack) > max:
+                max = len(stack)
+        return max
 
 def load_initial_state_of_stack_array(data: str) -> StackArray:
-    pass
+    number_of_stacks = determine_number_of_stacks(data)
+    sa = StackArray(number_of_stacks)
+    divide_index = find_divide(data)
+    for line in data[divide_index-2::-1]:
+        for stack_i in range(number_of_stacks):
+            crate = line[stack_i * 4 + 1]
+            if crate != ' ':
+                sa.stacks[stack_i].append(crate)
+    return sa
 
 
 def part_one(filename):
@@ -59,3 +85,13 @@ class Test(unittest.TestCase):
         data = read_puzzle_input('Day_05_short_input.txt')
         self.assertEqual(3, determine_number_of_stacks(data))
         
+    def test_load_initial_state_of_stack_array(self):
+        data = read_puzzle_input('Day_05_short_input.txt')
+        sa = load_initial_state_of_stack_array(data)
+        # print(sa)
+        
+class TestStackArray(unittest.TestCase):
+    def test_max_stack_height(self):
+        data = read_puzzle_input('Day_05_short_input.txt')
+        sa = load_initial_state_of_stack_array(data)
+        self.assertEqual(3, sa.max_stack_height())
