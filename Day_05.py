@@ -59,7 +59,7 @@ class StackArray:
             if len(stack) > max:
                 max = len(stack)
         return max
-    
+
     def reset(self, data: list[str]):
         number_of_stacks = determine_number_of_stacks(data)
         self.stacks = []
@@ -81,16 +81,33 @@ class StackArray:
             rval += str(stack[-1])
         return rval
 
-    def follow_instructions(self, data):
-        divide_index = find_divide(data)
-        for line in data[divide_index+1:]:
-            self.follow_instruction(line)
-
-    def follow_instruction(self, line):
+    def parse_instruction(self, line):
         result = re.search('^move (\d+) from (\d+) to (\d+)$', line)
         move_count = int(result.group(1))
         from_stack = self.stacks[int(result.group(2)) - 1]
         to_stack = self.stacks[int(result.group(3)) - 1]
+        return move_count, from_stack, to_stack
+
+    def follow_instructions_9000(self, data):
+        divide_index = find_divide(data)
+        for line in data[divide_index + 1:]:
+            self.follow_instruction_9000(line)
+
+    def follow_instruction_9000(self, line):
+        result = re.search('^move (\d+) from (\d+) to (\d+)$', line)
+        move_count, from_stack, to_stack = self.parse_instruction(line)
+        for i in range(move_count):
+            crate = from_stack.pop()
+            to_stack.append(crate)
+
+    def follow_instructions_9001(self, data):
+        divide_index = find_divide(data)
+        for line in data[divide_index + 1:]:
+            self.follow_instruction_9000(line)
+
+    def follow_instruction_9001(self, line):
+        result = re.search('^move (\d+) from (\d+) to (\d+)$', line)
+        move_count, from_stack, to_stack = self.parse_instruction(line)
         for i in range(move_count):
             crate = from_stack.pop()
             to_stack.append(crate)
@@ -100,17 +117,31 @@ def part_one(filename):
     data = read_puzzle_input(filename)
     sa = StackArray()
     sa.load_initial_state(data)
-    sa.follow_instructions(data)
+    sa.follow_instructions_9000(data)
     return sa.get_top_crates()
 
 
-filename = "Day_05_input.txt"
+def part_two(filename):
+    data = read_puzzle_input(filename)
+    sa = StackArray()
+    sa.load_initial_state(data)
+    sa.follow_instructions_9001(data)
+    return sa.get_top_crates()
+
+
+filename = "Day_05_short_input.txt"
 print(f'Answer part one: {part_one(filename)}')
+print(f'Answer part two: {part_two(filename)}')
 
 
 class Test(unittest.TestCase):
-    def test_part_two(self):
+    def test_part_one(self):
         self.assertEqual('CMZ', part_one('Day_05_short_input.txt'))
+        self.assertEqual('QMBMJDFTD', part_one('Day_05_input.txt'))
+
+    def test_part_two(self):
+        self.assertEqual('MCP', part_one('Day_05_short_input.txt'))
+        # self.assertEqual('QMBMJDFTD', part_one('Day_05_input.txt'))
 
     def test_read_puzzle_input(self):
         data = read_puzzle_input('Day_05_short_input.txt')
@@ -156,12 +187,12 @@ class TestStackArray(unittest.TestCase):
         sa = StackArray()
         sa.load_initial_state(data)
         self.assertEqual('NDP', sa.get_top_crates())
-        
+
     def test_follow_instructions(self):
         data = read_puzzle_input('Day_05_short_input.txt')
         sa = StackArray()
         sa.load_initial_state(data)
-        sa.follow_instructions(data)
+        sa.follow_instructions_9000(data)
         self.assertEqual('C', sa.stacks[0][-1])
         self.assertEqual('M', sa.stacks[1][-1])
         self.assertEqual('Z', sa.stacks[2][-1])
