@@ -10,23 +10,22 @@ def read_puzzle_input(filename):
     return data
 
 
-def find_divide(data) -> int:
+def find_divide(data: list[str]) -> int:
     for i, line in enumerate(data):
         if line == '':
             return i
     raise ValueError('Expected blank line to separate the stacks from instructions.')
 
-def determine_number_of_stacks(data) -> int:
+
+def determine_number_of_stacks(data: list[str]) -> int:
     divide_index = find_divide(data)
-    result = re.search('(\d+) *$', data[divide_index-1])
+    result = re.search('(\d+) *$', data[divide_index - 1])
     return int(result.group(1))
 
 
 class StackArray:
-    def __init__(self, number_of_stacks):
+    def __init__(self):
         self.stacks = []
-        for i in range(number_of_stacks):
-            self.stacks.append([])
 
     def __repr__(self):
         rval = []
@@ -45,24 +44,28 @@ class StackArray:
         rval.append(s)
         rval.append('\n')
         return ''.join(rval)
-    
+
     def max_stack_height(self):
         max = 0
         for stack in self.stacks:
             if len(stack) > max:
                 max = len(stack)
         return max
+    
+    def reset(self, data: list[str]):
+        number_of_stacks = determine_number_of_stacks(data)
+        self.stacks = []
+        for i in range(number_of_stacks):
+            self.stacks.append([])
 
-def load_initial_state_of_stack_array(data) -> StackArray:
-    number_of_stacks = determine_number_of_stacks(data)
-    sa = StackArray(number_of_stacks)
-    divide_index = find_divide(data)
-    for line in data[divide_index-2::-1]:
-        for stack_i in range(number_of_stacks):
-            crate = line[stack_i * 4 + 1]
-            if crate != ' ':
-                sa.stacks[stack_i].append(crate)
-    return sa
+    def load_initial_state(self, data: list[str]):
+        self.reset(data)
+        divide_index = find_divide(data)
+        for line in data[divide_index - 2::-1]:
+            for stack_i in range(len(self.stacks)):
+                crate = line[stack_i * 4 + 1]
+                if crate != ' ':
+                    self.stacks[stack_i].append(crate)
 
 
 def part_one(filename):
@@ -93,22 +96,26 @@ class Test(unittest.TestCase):
     def test_determine_number_of_stacks(self):
         data = read_puzzle_input('Day_05_short_input.txt')
         self.assertEqual(3, determine_number_of_stacks(data))
-        
-    def test_load_initial_state_of_stack_array(self):
-        data = read_puzzle_input('Day_05_short_input.txt')
-        sa = load_initial_state_of_stack_array(data)
-        print(sa)
-        
+
+
 class TestStackArray(unittest.TestCase):
     def test_max_stack_height(self):
         data = read_puzzle_input('Day_05_short_input.txt')
-        sa = load_initial_state_of_stack_array(data)
+        sa = StackArray()
+        sa.load_initial_state(data)
         self.assertEqual(3, sa.max_stack_height())
-        
+
     def test_repr(self):
         data = read_puzzle_input('Day_05_short_input.txt')
-        sa = load_initial_state_of_stack_array(data)
+        sa = StackArray()
+        sa.load_initial_state(data)
         self.assertEqual("    [D]     \n"
                          "[N] [C]     \n"
                          "[Z] [M] [P] \n"
                          " 1   2   3  \n", str(sa))
+
+    def test_load_initial_state_of_stack_array(self):
+        data = read_puzzle_input('Day_05_short_input.txt')
+        sa = StackArray()
+        sa.load_initial_state(data)
+        print(sa)
