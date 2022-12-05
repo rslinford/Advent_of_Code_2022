@@ -94,7 +94,6 @@ class StackArray:
             self.follow_instruction_9000(line)
 
     def follow_instruction_9000(self, line):
-        result = re.search('^move (\d+) from (\d+) to (\d+)$', line)
         move_count, from_stack, to_stack = self.parse_instruction(line)
         for i in range(move_count):
             crate = from_stack.pop()
@@ -103,14 +102,18 @@ class StackArray:
     def follow_instructions_9001(self, data):
         divide_index = find_divide(data)
         for line in data[divide_index + 1:]:
-            self.follow_instruction_9000(line)
+            self.follow_instruction_9001(line)
 
     def follow_instruction_9001(self, line):
-        result = re.search('^move (\d+) from (\d+) to (\d+)$', line)
+        to_stack: list[str]
         move_count, from_stack, to_stack = self.parse_instruction(line)
+        temp = []
+        # print(f'Before move {line}\n{self}')
         for i in range(move_count):
             crate = from_stack.pop()
-            to_stack.append(crate)
+            temp.append(crate)
+        to_stack.extend(temp[::-1])
+        # print(f'After move {line}\n{self}')
 
 
 def part_one(filename):
@@ -129,7 +132,7 @@ def part_two(filename):
     return sa.get_top_crates()
 
 
-filename = "Day_05_short_input.txt"
+filename = "Day_05_input.txt"
 print(f'Answer part one: {part_one(filename)}')
 print(f'Answer part two: {part_two(filename)}')
 
@@ -140,8 +143,8 @@ class Test(unittest.TestCase):
         self.assertEqual('QMBMJDFTD', part_one('Day_05_input.txt'))
 
     def test_part_two(self):
-        self.assertEqual('MCP', part_one('Day_05_short_input.txt'))
-        # self.assertEqual('QMBMJDFTD', part_one('Day_05_input.txt'))
+        self.assertEqual('MCD', part_two('Day_05_short_input.txt'))
+        self.assertEqual('NBTVTJNFJ', part_two('Day_05_input.txt'))
 
     def test_read_puzzle_input(self):
         data = read_puzzle_input('Day_05_short_input.txt')
