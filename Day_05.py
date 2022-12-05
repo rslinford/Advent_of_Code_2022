@@ -91,12 +91,9 @@ class StackArray:
         move_count = int(result.group(1))
         from_stack = self.stacks[int(result.group(2)) - 1]
         to_stack = self.stacks[int(result.group(3)) - 1]
-        # print(f'Before move\n{self}')
         for i in range(move_count):
-            # print(move_count, from_stack, to_stack)
             crate = from_stack.pop()
             to_stack.append(crate)
-        # print(f'After move\n{self}')
 
 
 def part_one(filename):
@@ -107,7 +104,7 @@ def part_one(filename):
     return sa.get_top_crates()
 
 
-filename = "Day_05_short_input.txt"
+filename = "Day_05_input.txt"
 print(f'Answer part one: {part_one(filename)}')
 
 
@@ -159,3 +156,12 @@ class TestStackArray(unittest.TestCase):
         sa = StackArray()
         sa.load_initial_state(data)
         self.assertEqual('NDP', sa.get_top_crates())
+        
+    def test_follow_instructions(self):
+        data = read_puzzle_input('Day_05_short_input.txt')
+        sa = StackArray()
+        sa.load_initial_state(data)
+        sa.follow_instructions(data)
+        self.assertEqual('C', sa.stacks[0][-1])
+        self.assertEqual('M', sa.stacks[1][-1])
+        self.assertEqual('Z', sa.stacks[2][-1])
