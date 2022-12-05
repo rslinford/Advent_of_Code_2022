@@ -32,15 +32,19 @@ class StackArray:
         for row in range(self.max_stack_height() - 1, -1, -1):
             s = ''
             for stack in self.stacks:
+                if len(s) > 0:
+                    s += ' '
                 if len(stack) > row:
-                    s += '[' + stack[row] + '] '
+                    s += '[' + stack[row] + ']'
                 else:
-                    s += '    '
+                    s += '   '
             rval.append(s)
             rval.append('\n')
         s = ''
         for i in range(len(self.stacks)):
-            s += ' ' + str(i + 1) + '  '
+            if len(s) > 0:
+                s += '  '
+            s += ' ' + str(i + 1)
         rval.append(s)
         rval.append('\n')
         return ''.join(rval)
@@ -109,10 +113,10 @@ class TestStackArray(unittest.TestCase):
         data = read_puzzle_input('Day_05_short_input.txt')
         sa = StackArray()
         sa.load_initial_state(data)
-        self.assertEqual("    [D]     \n"
-                         "[N] [C]     \n"
-                         "[Z] [M] [P] \n"
-                         " 1   2   3  \n", str(sa))
+        self.assertEqual("    [D]    \n"
+                         "[N] [C]    \n"
+                         "[Z] [M] [P]\n"
+                         " 1   2   3\n", str(sa))
 
     def test_load_initial_state_of_stack_array(self):
         data = read_puzzle_input('Day_05_short_input.txt')
