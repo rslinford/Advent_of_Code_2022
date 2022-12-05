@@ -10,13 +10,13 @@ def read_puzzle_input(filename):
     return data
 
 
-def find_divide(data: str) -> int:
+def find_divide(data) -> int:
     for i, line in enumerate(data):
         if line == '':
             return i
     raise ValueError('Expected blank line to separate the stacks from instructions.')
 
-def determine_number_of_stacks(data: str) -> int:
+def determine_number_of_stacks(data) -> int:
     divide_index = find_divide(data)
     result = re.search('(\d+) *$', data[divide_index-1])
     return int(result.group(1))
@@ -29,12 +29,21 @@ class StackArray:
             self.stacks.append([])
 
     def __repr__(self):
-        
         rval = []
+        for row in range(self.max_stack_height() - 1, -1, -1):
+            s = ''
+            for stack in self.stacks:
+                if len(stack) > row:
+                    s += '[' + stack[row] + '] '
+                else:
+                    s += '    '
+            rval.append(s)
+            rval.append('\n')
         s = ''
         for i in range(len(self.stacks)):
-            s += ' ' + str(i+1) + ' '
+            s += ' ' + str(i + 1) + '  '
         rval.append(s)
+        rval.append('\n')
         return ''.join(rval)
     
     def max_stack_height(self):
@@ -44,7 +53,7 @@ class StackArray:
                 max = len(stack)
         return max
 
-def load_initial_state_of_stack_array(data: str) -> StackArray:
+def load_initial_state_of_stack_array(data) -> StackArray:
     number_of_stacks = determine_number_of_stacks(data)
     sa = StackArray(number_of_stacks)
     divide_index = find_divide(data)
@@ -88,10 +97,18 @@ class Test(unittest.TestCase):
     def test_load_initial_state_of_stack_array(self):
         data = read_puzzle_input('Day_05_short_input.txt')
         sa = load_initial_state_of_stack_array(data)
-        # print(sa)
+        print(sa)
         
 class TestStackArray(unittest.TestCase):
     def test_max_stack_height(self):
         data = read_puzzle_input('Day_05_short_input.txt')
         sa = load_initial_state_of_stack_array(data)
         self.assertEqual(3, sa.max_stack_height())
+        
+    def test_repr(self):
+        data = read_puzzle_input('Day_05_short_input.txt')
+        sa = load_initial_state_of_stack_array(data)
+        self.assertEqual("    [D]     \n"
+                         "[N] [C]     \n"
+                         "[Z] [M] [P] \n"
+                         " 1   2   3  \n", str(sa))
