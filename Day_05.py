@@ -71,6 +71,12 @@ class StackArray:
                 if crate != ' ':
                     self.stacks[stack_i].append(crate)
 
+    def get_top_crates(self):
+        rval = ''
+        for stack in self.stacks:
+            rval += stack[-1]
+        return rval
+
 
 def part_one(filename):
     data = read_puzzle_input(filename)
@@ -118,8 +124,16 @@ class TestStackArray(unittest.TestCase):
                          "[Z] [M] [P]\n"
                          " 1   2   3\n", str(sa))
 
-    def test_load_initial_state_of_stack_array(self):
+    def test_load_initial_state(self):
         data = read_puzzle_input('Day_05_short_input.txt')
         sa = StackArray()
         sa.load_initial_state(data)
-        print(sa)
+        self.assertEqual('Z', sa.stacks[0][0])
+        self.assertEqual('N', sa.stacks[0][1])
+        self.assertEqual('P', sa.stacks[2][0])
+
+    def test_get_top_crates(self):
+        data = read_puzzle_input('Day_05_short_input.txt')
+        sa = StackArray()
+        sa.load_initial_state(data)
+        self.assertEqual('NDP', sa.get_top_crates())
