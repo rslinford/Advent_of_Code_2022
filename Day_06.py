@@ -21,13 +21,20 @@ def part_one(filename):
 
 def part_two(filename):
     data = read_puzzle_input(filename)
+    for i,c in enumerate(data):
+        fourteen = set()
+        for j in range(i,i+14):
+            fourteen.add(data[j])
+        if len(fourteen) == 14:
+            return i + 14
+        # print(i, c, four)
     return -1
 
 
 filename = 'Day_06_input.txt'
 short_filename = 'Day_06_short_input.txt'
 print(f'Answer part one: {part_one(filename)}')
-print(f'Answer part two: {part_two(short_filename)}')
+print(f'Answer part two: {part_two(filename)}')
 
 
 class Test(unittest.TestCase):
@@ -36,5 +43,5 @@ class Test(unittest.TestCase):
         self.assertEqual(1356, part_one(filename))
 
     def test_part_two(self):
-        self.assertEqual(-1, part_two(short_filename))
-        self.assertEqual(-1, part_two(short_filename))
+        self.assertEqual(23, part_two(short_filename))
+        self.assertEqual(2564, part_two(filename))
