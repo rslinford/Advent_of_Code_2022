@@ -28,7 +28,7 @@ class Tree:
         if not self.current_dir.parent:
             raise ValueError(f'cd to parent dir failed. Current dir {self.current_dir} has no parent.')
         self.current_dir = self.current_dir.parent
-    
+
     def cd(self, name):
         if name == '/':
             self.cd_root()
@@ -50,11 +50,21 @@ class Tree:
         file = File(name, size)
         self.add_entry(file)
 
+    def traverse_dir(self, dir):
+        print(dir, dir.calc_size())
+        for entry in dir.children:
+            if isinstance(entry, Directory):
+                self.traverse_dir(entry)
+
+    def traverse_dirs_from_root(self):
+        self.traverse_dir(self.root)
+
+
 class Entry:
     def __init__(self, name):
         self.name = name
         self.parent = None
-        
+
     def depth(self):
         n = 0
         entry = self.parent
@@ -73,6 +83,9 @@ class File(Entry):
     def __repr__(self):
         return f'{"   " * self.depth()}- {self.name} (file, size={self.size})'
 
+    def calc_size(self):
+        return self.size
+
 
 class Directory(Entry):
     def __init__(self, name):
@@ -80,7 +93,10 @@ class Directory(Entry):
         self.children = set()
 
     def __repr__(self):
-        rval = [f'- {self.name} (dir)\n']
+        return f'{"   " * self.depth()}- {self.name} (dir)'
+
+    def repr_recursive(self):
+        rval = [f'{"   " * self.depth()}- {self.name} (dir)\n']
         for child in self.children:
             rval.append(f'{child}\n')
         return ''.join(rval)
@@ -90,6 +106,12 @@ class Directory(Entry):
 
     def add_child(self, child):
         self.children.add(child)
+
+    def calc_size(self):
+        size = 0
+        for entry in self.children:
+            size += entry.calc_size()
+        return size
 
 
 def build_tree(data: list[str]):
@@ -120,7 +142,9 @@ def build_tree(data: list[str]):
 def part_one(filename):
     data = read_puzzle_input(filename)
     tree = build_tree(data)
-    print(tree)
+    # print(tree)
+    tree.traverse_dirs_from_root()
+    # print('Root size:', tree.root.calc_size())
     return -1
 
 
