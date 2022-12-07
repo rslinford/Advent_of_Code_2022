@@ -13,6 +13,7 @@ class Tree:
         self.root = Directory('/')
         self.current_dir = self.root
         self.tally = 0
+        self.candidates = []
 
     def __repr__(self):
         rval = [str(self.root)]
@@ -51,18 +52,36 @@ class Tree:
         file = File(name, size)
         self.add_entry(file)
 
-    def traverse_dir(self, dir):
+    def traverse_dirs_part_one(self, dir):
         # print(dir, dir.calc_size())
         if dir.calc_size() <= 100000:
             self.tally += dir.calc_size()
         for entry in dir.children:
             if isinstance(entry, Directory):
-                self.traverse_dir(entry)
+                self.traverse_dirs_part_one(entry)
 
-    def traverse_dirs_from_root(self):
+    def traverse_dirs_from_root_part_one(self):
         self.tally = 0
-        self.traverse_dir(self.root)
+        self.traverse_dirs_part_one(self.root)
         return self.tally
+
+    def traverse_dirs_part_two(self, dir, size):
+        if dir.calc_size() >= size:
+            self.candidates.append(dir)
+        for entry in dir.children:
+            if isinstance(entry, Directory):
+                self.traverse_dirs_part_two(entry, size)
+
+    def traverse_dirs_from_root_part_two(self):
+        total_disk_space = 70000000
+        required_space = 30000000
+        total_used_space = self.root.calc_size()
+        total_unused_space = total_disk_space - total_used_space
+        target_size = required_space - total_unused_space
+        self.candidates = []
+        self.traverse_dirs_part_two(self.root, target_size)
+        self.candidates.sort(reverse=False)
+        return self.candidates[0]
 
 
 class Entry:
@@ -107,7 +126,7 @@ class Directory(Entry):
         return ''.join(rval)
 
     def __lt__(self, other):
-        return self.name < other.name
+        return self.calc_size() < other.calc_size()
 
     def add_child(self, child):
         self.children.add(child)
@@ -148,20 +167,22 @@ def part_one(filename):
     data = read_puzzle_input(filename)
     tree = build_tree(data)
     # print(tree)
-    tally = tree.traverse_dirs_from_root()
+    tally = tree.traverse_dirs_from_root_part_one()
     # print('Root size:', tree.root.calc_size())
     return tally
 
 
 def part_two(filename):
     data = read_puzzle_input(filename)
-    return -1
+    tree = build_tree(data)
+    target_dir = tree.traverse_dirs_from_root_part_two()
+    return target_dir.calc_size()
 
 
 filename = 'Day_07_input.txt'
 short_filename = 'Day_07_short_input.txt'
 print(f'Answer part one: {part_one(filename)}')
-print(f'Answer part two: {part_two(short_filename)}')
+print(f'Answer part two: {part_two(filename)}')
 
 class Test(unittest.TestCase):
     def test_part_one(self):
@@ -169,5 +190,5 @@ class Test(unittest.TestCase):
         self.assertEqual(1086293, part_one(filename))
 
     def test_part_two(self):
-        self.assertEqual(-1, part_two(short_filename))
-        self.assertEqual(-1, part_two(filename))
+        self.assertEqual(24933642, part_two(short_filename))
+        self.assertEqual(366028, part_two(filename))
