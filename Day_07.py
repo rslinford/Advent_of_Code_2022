@@ -12,6 +12,7 @@ class Tree:
     def __init__(self):
         self.root = Directory('/')
         self.current_dir = self.root
+        self.tally = 0
 
     def __repr__(self):
         rval = [str(self.root)]
@@ -51,13 +52,17 @@ class Tree:
         self.add_entry(file)
 
     def traverse_dir(self, dir):
-        print(dir, dir.calc_size())
+        # print(dir, dir.calc_size())
+        if dir.calc_size() <= 100000:
+            self.tally += dir.calc_size()
         for entry in dir.children:
             if isinstance(entry, Directory):
                 self.traverse_dir(entry)
 
     def traverse_dirs_from_root(self):
+        self.tally = 0
         self.traverse_dir(self.root)
+        return self.tally
 
 
 class Entry:
@@ -143,9 +148,9 @@ def part_one(filename):
     data = read_puzzle_input(filename)
     tree = build_tree(data)
     # print(tree)
-    tree.traverse_dirs_from_root()
+    tally = tree.traverse_dirs_from_root()
     # print('Root size:', tree.root.calc_size())
-    return -1
+    return tally
 
 
 def part_two(filename):
@@ -155,14 +160,14 @@ def part_two(filename):
 
 filename = 'Day_07_input.txt'
 short_filename = 'Day_07_short_input.txt'
-print(f'Answer part one: {part_one(short_filename)}')
+print(f'Answer part one: {part_one(filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
-# class Test(unittest.TestCase):
-#     def test_part_one(self):
-#         self.assertEqual(-1, part_one(short_filename))
-#         self.assertEqual(-1, part_one(filename))
-# 
-#     def test_part_two(self):
-#         self.assertEqual(-1, part_two(short_filename))
-#         self.assertEqual(-1, part_two(filename))
+class Test(unittest.TestCase):
+    def test_part_one(self):
+        self.assertEqual(95437, part_one(short_filename))
+        self.assertEqual(1086293, part_one(filename))
+
+    def test_part_two(self):
+        self.assertEqual(-1, part_two(short_filename))
+        self.assertEqual(-1, part_two(filename))
