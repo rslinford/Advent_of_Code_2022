@@ -34,6 +34,16 @@ class TreeGrid:
         for y, line in enumerate(data):
             for x, c in enumerate(line):
                 self.grid[y][x] = int(c)
+    
+    def is_visible(self, x, y):
+        if y == 0 or x == 0:
+            return True
+        if y + 1 == self.grid.shape[0] or x + 1 == self.grid.shape[1]:
+            return True
+        # todo: look up/down left/right
+
+    def value(self, x, y):
+        return self.grid[y][x]
 
 
 def part_one(filename):
@@ -71,3 +81,14 @@ class Test(unittest.TestCase):
                          "65332\n"
                          "33549\n"
                          "35390", str(tg))
+
+    def test_is_visible(self):
+        data = read_puzzle_input(short_filename)
+        tg = TreeGrid(data)
+        self.assertEqual((5,5), tg.grid.shape)
+        self.assertEqual(True, tg.is_visible(0, 0))
+        self.assertEqual(True, tg.is_visible(4, 4))
+        self.assertEqual(True, tg.is_visible(4, 2))
+        self.assertEqual(True, tg.is_visible(2, 4))
+        self.assertEqual(5, tg.value(1, 1))
+        self.assertEqual(True, tg.is_visible(1, 1))
