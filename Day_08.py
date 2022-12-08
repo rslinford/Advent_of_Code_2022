@@ -34,13 +34,59 @@ class TreeGrid:
         for y, line in enumerate(data):
             for x, c in enumerate(line):
                 self.grid[y][x] = int(c)
-    
-    def is_visible(self, x, y):
-        if y == 0 or x == 0:
+
+    def is_visible_up(self, x_target, y_target):
+        target_value = self.grid[y_target][x_target]
+        for y in range(y_target - 1, -1, -1):
+            if self.grid[y][x_target] >= target_value:
+                return False
+        return True
+
+    def is_visible_down(self, x_target, y_target):
+        target_value = self.grid[y_target][x_target]
+        for y in range(y_target + 1, self.grid.shape[0], 1):
+            if self.grid[y][x_target] >= target_value:
+                return False
+        return True
+
+    def is_visible_right(self, x_target, y_target):
+        target_value = self.grid[y_target][x_target]
+        for x in range(x_target + 1, self.grid.shape[1], 1):
+            if self.grid[y_target][x] >= target_value:
+                return False
+        return True
+
+    def is_visible_left(self, x_target, y_target):
+        target_value = self.grid[y_target][x_target]
+        for x in range(x_target - 1, -1, -1):
+            if self.grid[y_target][x] >= target_value:
+                return False
+        return True
+
+    def is_visible(self, x_target, y_target):
+        if y_target == 0 or x_target == 0:
             return True
-        if y + 1 == self.grid.shape[0] or x + 1 == self.grid.shape[1]:
+        if y_target + 1 == self.grid.shape[0] or x_target + 1 == self.grid.shape[1]:
             return True
         # todo: look up/down left/right
+        if self.is_visible_up(x_target, y_target):
+            return True
+        if self.is_visible_down(x_target, y_target):
+            return True
+        if self.is_visible_right(x_target, y_target):
+            return True
+        if self.is_visible_left(x_target, y_target):
+            return True
+        return False
+    
+    def count_visible(self):
+        tally = 0 
+        for y in range(self.grid.shape[0]):
+            for x in range(self.grid.shape[1]):
+                if self.is_visible(x, y):
+                    tally += 1
+        return tally
+                
 
     def value(self, x, y):
         return self.grid[y][x]
@@ -49,8 +95,7 @@ class TreeGrid:
 def part_one(filename):
     data = read_puzzle_input(filename)
     tg = TreeGrid(data)
-    print(tg)
-    return -1
+    return tg.count_visible()
 
 
 def part_two(filename):
@@ -66,8 +111,8 @@ print(f'Answer part two: {part_two(short_filename)}')
 
 class Test(unittest.TestCase):
     def test_part_one(self):
-        self.assertEqual(-1, part_one(short_filename))
-        # self.assertEqual(-1, part_one(filename))
+        self.assertEqual(21, part_one(short_filename))
+        self.assertEqual(-1, part_one(filename))
 
     def test_part_two(self):
         self.assertEqual(-1, part_two(short_filename))
@@ -85,10 +130,15 @@ class Test(unittest.TestCase):
     def test_is_visible(self):
         data = read_puzzle_input(short_filename)
         tg = TreeGrid(data)
-        self.assertEqual((5,5), tg.grid.shape)
+        self.assertEqual((5, 5), tg.grid.shape)
         self.assertEqual(True, tg.is_visible(0, 0))
         self.assertEqual(True, tg.is_visible(4, 4))
         self.assertEqual(True, tg.is_visible(4, 2))
         self.assertEqual(True, tg.is_visible(2, 4))
         self.assertEqual(5, tg.value(1, 1))
         self.assertEqual(True, tg.is_visible(1, 1))
+        self.assertEqual(True, tg.is_visible(2, 1))
+        self.assertEqual(False, tg.is_visible(3, 1))
+        self.assertEqual(True, tg.is_visible(1, 2))
+        self.assertEqual(False, tg.is_visible(2, 2))
+        self.assertEqual(True, tg.is_visible(1, 4))
