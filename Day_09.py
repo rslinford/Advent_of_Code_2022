@@ -1,4 +1,3 @@
-import re
 import unittest
 
 import numpy as np
@@ -10,10 +9,10 @@ def read_puzzle_input(filename):
     return data
 
 
-
-
 def part_one(filename):
     data = read_puzzle_input(filename)
+    for line in data:
+        print(line)
     return -1
 
 
@@ -36,4 +35,3 @@ class Test(unittest.TestCase):
     def test_part_two(self):
         self.assertEqual(-1, part_two(short_filename))
         self.assertEqual(-1, part_two(filename))
-
