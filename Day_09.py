@@ -64,37 +64,38 @@ class RopeSimulator():
 
         return ''.join(rval)
 
-    def move_head_right(self):
-        self.knots[0].move_right()
-        self.knots[0].add_current_to_history()
-        self.consider_tail()
+    def move_head_right(self, head_index):
+        self.knots[head_index].move_right()
+        self.knots[head_index].add_current_to_history()
+        self.consider_tail(head_index)
 
-    def move_head_left(self):
-        self.knots[0].move_left()
-        self.knots[0].add_current_to_history()
-        self.consider_tail()
+    def move_head_left(self, head_index):
+        self.knots[head_index].move_left()
+        self.knots[head_index].add_current_to_history()
+        self.consider_tail(head_index)
 
-    def move_head_up(self):
-        self.knots[0].move_up()
-        self.knots[0].add_current_to_history()
-        self.consider_tail()
+    def move_head_up(self, head_index):
+        self.knots[head_index].move_up()
+        self.knots[head_index].add_current_to_history()
+        self.consider_tail(head_index)
 
-    def move_head_down(self):
-        self.knots[0].move_down()
-        self.knots[0].add_current_to_history()
-        self.consider_tail()
+    def move_head_down(self, head_index):
+        self.knots[head_index].move_down()
+        self.knots[head_index].add_current_to_history()
+        self.consider_tail(head_index)
 
-    def head_and_tail_delta(self):
-        return self.knots[0].x - self.knots[1].x, self.knots[0].y - self.knots[1].y
+    def head_and_tail_delta(self, head_index):
+        return self.knots[head_index].x - self.knots[head_index + 1].x, \
+            self.knots[head_index].y - self.knots[head_index + 1].y
 
-    def head_and_tail_touch(self):
-        delta_x, delta_y = self.head_and_tail_delta()
+    def head_and_tail_touch(self, head_index):
+        delta_x, delta_y = self.head_and_tail_delta(head_index)
         return abs(delta_x) < 2 and abs(delta_y) < 2
 
-    def consider_tail(self):
-        if self.head_and_tail_touch():
+    def consider_tail(self, head_index):
+        if self.head_and_tail_touch(head_index):
             return
-        delta_x, delta_y = self.head_and_tail_delta()
+        delta_x, delta_y = self.head_and_tail_delta(head_index)
         # Non-diagonal
         if delta_x == 0:
             assert abs(delta_y) == 2
@@ -132,6 +133,7 @@ def read_puzzle_input(filename):
         data = f.read().strip().split('\n')
     return data
 
+
 def follow_directions(rs, data):
     for line in data:
         # print(rs)
@@ -140,16 +142,17 @@ def follow_directions(rs, data):
         result = re.search('^(.) (\d+)$', line)
         direction = result.group(1)
         distance = int(result.group(2))
+        head_index = 0
         for n in range(distance):
             match direction:
                 case 'U':
-                    rs.move_head_up()
+                    rs.move_head_up(head_index)
                 case 'D':
-                    rs.move_head_down()
+                    rs.move_head_down(head_index)
                 case 'L':
-                    rs.move_head_left()
+                    rs.move_head_left(head_index)
                 case 'R':
-                    rs.move_head_right()
+                    rs.move_head_right(head_index)
                 case _:
                     raise ValueError(f'Expected U, D, L, or R but got {direction}')
     #         print(f'Turn {n}')
@@ -162,14 +165,14 @@ def part_one(filename):
     rs = RopeSimulator(2)
     data = read_puzzle_input(filename)
     follow_directions(rs, data)
-    return len(rs.knots[1].history)
+    return len(rs.knots[-1].history)
 
 
 def part_two(filename):
-    rs = RopeSimulator(2)
+    rs = RopeSimulator(10)
     data = read_puzzle_input(filename)
     follow_directions(rs, data)
-    #return len(rs.knots[1].history)
+    # return len(rs.knots[-1].history)
     return -1
 
 
@@ -177,6 +180,7 @@ filename = 'Day_09_input.txt'
 short_filename = 'Day_09_short_input.txt'
 print(f'Answer part one: {part_one(filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
+
 
 class Test(unittest.TestCase):
     def test_part_one(self):
