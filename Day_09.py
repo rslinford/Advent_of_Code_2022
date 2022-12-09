@@ -16,19 +16,15 @@ class Point():
 
     def move_right(self):
         self.x += 1
-        self.add_current_to_history()
 
     def move_left(self):
         self.x -= 1
-        self.add_current_to_history()
 
     def move_down(self):
         self.y += 1
-        self.add_current_to_history()
 
     def move_up(self):
         self.y -= 1
-        self.add_current_to_history()
 
     def is_at(self, p):
         return self.x == p[0] and self.y == p[1]
@@ -39,7 +35,7 @@ class Point():
 
 class RopeSimulator():
     def __init__(self):
-        self.start = Point(0,0)
+        self.start = Point(0, 0)
         self.head = Point(self.start.x, self.start.y)
         self.tail = Point(self.start.x, self.start.y)
 
@@ -48,7 +44,7 @@ class RopeSimulator():
         for y in range(-10, 10):
             if len(rval) > 0:
                 rval.append('\n')
-            for x in range(-10,10):
+            for x in range(-10, 10):
                 p = (x, y)
                 if self.head.is_at(p):
                     rval.append('H')
@@ -68,18 +64,22 @@ class RopeSimulator():
 
     def move_head_right(self):
         self.head.move_right()
+        self.head.add_current_to_history()
         self.consider_tail()
 
     def move_head_left(self):
         self.head.move_left()
+        self.head.add_current_to_history()
         self.consider_tail()
 
     def move_head_up(self):
         self.head.move_up()
+        self.head.add_current_to_history()
         self.consider_tail()
 
     def move_head_down(self):
         self.head.move_down()
+        self.head.add_current_to_history()
         self.consider_tail()
 
     def head_and_tail_delta(self):
@@ -100,6 +100,7 @@ class RopeSimulator():
                 self.tail.move_down()
             else:
                 self.tail.move_up()
+            self.tail.add_current_to_history()
             return
         elif delta_y == 0:
             assert abs(delta_x) == 2
@@ -107,6 +108,7 @@ class RopeSimulator():
                 self.tail.move_left()
             else:
                 self.tail.move_right()
+            self.tail.add_current_to_history()
             return
         # Diagonal
         assert abs(delta_x) > 0
@@ -119,7 +121,9 @@ class RopeSimulator():
             self.tail.move_left()
         else:
             self.tail.move_right()
+        self.tail.add_current_to_history()
         return
+
 
 def read_puzzle_input(filename):
     with open(filename, 'r') as f:
@@ -131,9 +135,9 @@ def part_one(filename):
     rs = RopeSimulator()
     data = read_puzzle_input(filename)
     for line in data:
-        print(rs)
-        print()
-        print(line)
+        # print(rs)
+        # print()
+        # print(line)
         result = re.search('^(.) (\d+)$', line)
         direction = result.group(1)
         distance = int(result.group(2))
@@ -149,11 +153,11 @@ def part_one(filename):
                     rs.move_head_right()
                 case _:
                     raise ValueError(f'Expected U, D, L, or R but got {direction}')
-            print(f'Turn {n}')
-            print(rs)
-            print()
-    print(rs)
-    return -1
+    #         print(f'Turn {n}')
+    #         print(rs)
+    #         print()
+    # print(rs)
+    return len(rs.tail.history)
 
 
 def part_two(filename):
@@ -163,15 +167,14 @@ def part_two(filename):
 
 filename = 'Day_09_input.txt'
 short_filename = 'Day_09_short_input.txt'
-print(f'Answer part one: {part_one(short_filename)}')
+print(f'Answer part one: {part_one(filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
+class Test(unittest.TestCase):
+    def test_part_one(self):
+        self.assertEqual(13, part_one(short_filename))
+        self.assertEqual(5902, part_one(filename))
 
-# class Test(unittest.TestCase):
-#     def test_part_one(self):
-#         self.assertEqual(-1, part_one(short_filename))
-#         self.assertEqual(-1, part_one(filename))
-#
-#     def test_part_two(self):
-#         self.assertEqual(-1, part_two(short_filename))
-#         self.assertEqual(-1, part_two(filename))
+    def test_part_two(self):
+        self.assertEqual(-1, part_two(short_filename))
+        self.assertEqual(-1, part_two(filename))
