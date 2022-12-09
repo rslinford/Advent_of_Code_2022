@@ -1,4 +1,4 @@
-Quack!R 1
+R 1
 D 1
 U 1
 R 2
