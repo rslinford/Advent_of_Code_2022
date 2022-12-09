@@ -1,8 +1,6 @@
 import re
 import unittest
 
-import numpy as np
-
 
 class Point():
     def __init__(self, x, y):
@@ -10,6 +8,9 @@ class Point():
         self.y = y
         self.history = set()
         self.add_current_to_history()
+
+    def __repr__(self):
+        return f'({self.x}, {self.y})'
 
     def add_current_to_history(self):
         self.history.add((self.x, self.y))
@@ -34,10 +35,11 @@ class Point():
 
 
 class RopeSimulator():
-    def __init__(self):
+    def __init__(self, length):
         self.start = Point(0, 0)
-        self.head = Point(self.start.x, self.start.y)
-        self.tail = Point(self.start.x, self.start.y)
+        self.knots = [Point(self.start.x, self.start.y) for _ in range(length)]
+        # self.head = Point(self.start.x, self.start.y)
+        # self.tail = Point(self.start.x, self.start.y)
 
     def __repr__(self):
         rval = []
@@ -46,16 +48,16 @@ class RopeSimulator():
                 rval.append('\n')
             for x in range(-10, 10):
                 p = (x, y)
-                if self.head.is_at(p):
+                if self.knots[0].is_at(p):
                     rval.append('H')
                     continue
-                if self.tail.is_at(p):
+                if self.knots[1].is_at(p):
                     rval.append('T')
                     continue
                 if self.start.is_at(p):
                     rval.append('s')
                     continue
-                if self.tail.has_been_at(p):
+                if self.knots[1].has_been_at(p):
                     rval.append('#')
                     continue
                 rval.append('.')
@@ -63,27 +65,27 @@ class RopeSimulator():
         return ''.join(rval)
 
     def move_head_right(self):
-        self.head.move_right()
-        self.head.add_current_to_history()
+        self.knots[0].move_right()
+        self.knots[0].add_current_to_history()
         self.consider_tail()
 
     def move_head_left(self):
-        self.head.move_left()
-        self.head.add_current_to_history()
+        self.knots[0].move_left()
+        self.knots[0].add_current_to_history()
         self.consider_tail()
 
     def move_head_up(self):
-        self.head.move_up()
-        self.head.add_current_to_history()
+        self.knots[0].move_up()
+        self.knots[0].add_current_to_history()
         self.consider_tail()
 
     def move_head_down(self):
-        self.head.move_down()
-        self.head.add_current_to_history()
+        self.knots[0].move_down()
+        self.knots[0].add_current_to_history()
         self.consider_tail()
 
     def head_and_tail_delta(self):
-        return self.head.x - self.tail.x, self.head.y - self.tail.y
+        return self.knots[0].x - self.knots[1].x, self.knots[0].y - self.knots[1].y
 
     def head_and_tail_touch(self):
         delta_x, delta_y = self.head_and_tail_delta()
@@ -97,31 +99,31 @@ class RopeSimulator():
         if delta_x == 0:
             assert abs(delta_y) == 2
             if delta_y > 0:
-                self.tail.move_down()
+                self.knots[1].move_down()
             else:
-                self.tail.move_up()
-            self.tail.add_current_to_history()
+                self.knots[1].move_up()
+            self.knots[1].add_current_to_history()
             return
         elif delta_y == 0:
             assert abs(delta_x) == 2
             if delta_x < 0:
-                self.tail.move_left()
+                self.knots[1].move_left()
             else:
-                self.tail.move_right()
-            self.tail.add_current_to_history()
+                self.knots[1].move_right()
+            self.knots[1].add_current_to_history()
             return
         # Diagonal
         assert abs(delta_x) > 0
         assert abs(delta_y) > 0
         if delta_y > 0:
-            self.tail.move_down()
+            self.knots[1].move_down()
         else:
-            self.tail.move_up()
+            self.knots[1].move_up()
         if delta_x < 0:
-            self.tail.move_left()
+            self.knots[1].move_left()
         else:
-            self.tail.move_right()
-        self.tail.add_current_to_history()
+            self.knots[1].move_right()
+        self.knots[1].add_current_to_history()
         return
 
 
@@ -130,10 +132,7 @@ def read_puzzle_input(filename):
         data = f.read().strip().split('\n')
     return data
 
-
-def part_one(filename):
-    rs = RopeSimulator()
-    data = read_puzzle_input(filename)
+def follow_directions(rs, data):
     for line in data:
         # print(rs)
         # print()
@@ -157,11 +156,20 @@ def part_one(filename):
     #         print(rs)
     #         print()
     # print(rs)
-    return len(rs.tail.history)
+
+
+def part_one(filename):
+    rs = RopeSimulator(2)
+    data = read_puzzle_input(filename)
+    follow_directions(rs, data)
+    return len(rs.knots[1].history)
 
 
 def part_two(filename):
+    rs = RopeSimulator(2)
     data = read_puzzle_input(filename)
+    follow_directions(rs, data)
+    #return len(rs.knots[1].history)
     return -1
 
 
