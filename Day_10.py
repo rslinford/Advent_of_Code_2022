@@ -33,6 +33,27 @@ def part_one(filename):
 
 def part_two(filename):
     data = read_puzzle_input(filename)
+    X = 1
+    cycle = 1
+    line_length = 0
+    for line in data:
+        print('#', end='')
+        line_length += 1
+        if line_length >= 40:
+            print()
+            line_length=0
+        if line == 'noop':
+            cycle += 1
+        else:
+            print('.', end='')
+            line_length += 1
+            if line_length >= 40:
+                print()
+                line_length = 0
+            result = re.search('addx (-?\d+)', line)
+            V = int(result.group(1))
+            X += V
+            cycle += 2
     return -1
 
 
