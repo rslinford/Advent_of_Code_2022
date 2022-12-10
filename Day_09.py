@@ -44,10 +44,10 @@ class RopeSimulator():
     def __repr__(self):
         head_index = 0
         rval = []
-        for y in range(-10, 10):
+        for y in range(-20, 20):
             if len(rval) > 0:
                 rval.append('\n')
-            for x in range(-10, 10):
+            for x in range(-20, 20):
                 p = (x, y)
                 if self.knots[head_index].is_at(p):
                     rval.append('H')
@@ -145,9 +145,9 @@ def read_puzzle_input(filename):
 
 def follow_directions(rs, data):
     for line in data:
-        print(rs)
-        print()
-        print(line)
+        # print(rs)
+        # print()
+        # print(line)
         result = re.search('^(.) (\d+)$', line)
         direction = result.group(1)
         distance = int(result.group(2))
@@ -167,10 +167,10 @@ def follow_directions(rs, data):
                             raise ValueError(f'Expected U, D, L, or R but got {direction}')
                 else:
                     rs.consider_tail(head_index)
-            print(f'Turn {n}')
-            print(rs)
-            print()
-    print(rs)
+            # print(f'Turn {n}')
+            # print(rs)
+            # print()
+    # print(rs)
 
 
 def part_one(filename):
@@ -189,14 +189,17 @@ def part_two(filename):
 
 filename = 'Day_09_input.txt'
 short_filename = 'Day_09_short_input.txt'
+short_filename_two = 'Day_09_short_input_two.txt'
 # print(f'Answer part one: {part_one(short_filename)}')
-print(f'Answer part two: {part_two(short_filename)}')
+# print(f'Answer part two: {part_two(short_filename)}')
 
 class Test(unittest.TestCase):
     def test_part_one(self):
         self.assertEqual(13, part_one(short_filename))
-        # self.assertEqual(5902, part_one(filename))
+        self.assertEqual(88, part_one(short_filename_two))
+        self.assertEqual(5902, part_one(filename))
 
     def test_part_two(self):
         self.assertEqual(1, part_two(short_filename))
-        # self.assertEqual(-1, part_two(filename))
+        self.assertEqual(36, part_two(short_filename_two))
+        self.assertEqual(2445, part_two(filename))
