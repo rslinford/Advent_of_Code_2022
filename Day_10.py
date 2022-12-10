@@ -22,8 +22,8 @@ def part_one(filename):
         else:
             if cycle in check_cycles:
                 tally += cycle * X
-            elif cycle+1 in check_cycles:
-                tally += (cycle+1) * X
+            elif cycle + 1 in check_cycles:
+                tally += (cycle + 1) * X
             result = re.search('addx (-?\d+)', line)
             V = int(result.group(1))
             X += V
@@ -37,15 +37,21 @@ def part_two(filename):
     cycle = 1
     line_length = 0
     for line in data:
-        print('#', end='')
+        if line_length  == X or line_length  == X - 1 or line_length  == X + 1:
+            print('#', end='')
+        else:
+            print('.', end='')
         line_length += 1
         if line_length >= 40:
             print()
-            line_length=0
+            line_length = 0
         if line == 'noop':
             cycle += 1
         else:
-            print('.', end='')
+            if line_length == X or line_length == X - 1 or line_length == X + 1:
+                print('#', end='')
+            else:
+                print('.', end='')
             line_length += 1
             if line_length >= 40:
                 print()
@@ -59,8 +65,8 @@ def part_two(filename):
 
 filename = 'Day_10_input.txt'
 short_filename = 'Day_10_short_input.txt'
-print(f'Answer part one: {part_one(short_filename)}')
-print(f'Answer part two: {part_two(short_filename)}')
+print(f'Answer part one: {part_one(filename)}')
+print(f'Answer part two: {part_two(filename)}')
 
 
 class Test(unittest.TestCase):
@@ -68,6 +74,6 @@ class Test(unittest.TestCase):
         self.assertEqual(13140, part_one(short_filename))
         self.assertEqual(12520, part_one(filename))
 
-    def test_part_two(self):
-        self.assertEqual(-1, part_two(short_filename))
-        # self.assertEqual(-1, part_two(filename))
+    # def test_part_two(self):
+    #     self.assertEqual(-1, part_two(short_filename))
+    #     # self.assertEqual(-1, part_two(filename))
