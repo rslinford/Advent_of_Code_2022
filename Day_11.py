@@ -60,7 +60,7 @@ class Monkey:
     def inspect_items(self, barrel):
         for item in self.items:
             worry = self.operate(item)
-            worry //= 3
+            worry = worry % 9699690
             if self.evenly_divisible(worry):
                 self.throw_at(worry, self.if_true_throw_to, barrel)
             else:
@@ -104,13 +104,19 @@ def part_one(barrel: dict[int, Monkey]):
 
 
 def part_two(barrel):
-    return -1
+    for r in range(1, 10001):
+        do_round(barrel)
+        print(f'After round {r}')
+        # print(barrel)
+    values = list(barrel.values())
+    values.sort(reverse=True)
+    return values[0].inspection_counter * values[1].inspection_counter
 
 
 filename = 'Day_11_input.txt'
 short_filename = 'Day_11_short_input.txt'
-print(f'Answer part one: {part_one(long_barrel)}')
-print(f'Answer part two: {part_two(short_barrel)}')
+# print(f'Answer part one: {part_one(long_barrel)}')
+print(f'Answer part two: {part_two(long_barrel)}')
 
 
 # class Test(unittest.TestCase):
@@ -119,5 +125,5 @@ print(f'Answer part two: {part_two(short_barrel)}')
 #         self.assertEqual(10605, part_one(short_barrel))
 #
 #     def test_part_two(self):
-#         self.assertEqual(-1, part_two(short_barrel))
-#         self.assertEqual(-1, part_two(short_barrel))
+#         self.assertEqual(2567194800, part_two(short_barrel))
+#         self.assertEqual(12848882750, part_two(long_barrel))
