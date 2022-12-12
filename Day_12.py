@@ -1,7 +1,11 @@
+import math
 import unittest
 
 import numpy as np
 from colorama import Fore, Back, Style
+import sys
+
+sys.setrecursionlimit(5000)
 
 def read_puzzle_input(filename):
     with open(filename, 'r') as f:
@@ -66,6 +70,8 @@ class Hiker:
         self.end_x, self.end_y = map.find_end()
         # self.step_tally = 0
         # self.bread_crumbs = set()
+        self.shortest_step_tally = math.inf
+        self.total_visits_counter = 0
 
     def render_map(self, current_x, current_y, bread_crumbs):
         rval = []
@@ -88,18 +94,23 @@ class Hiker:
 
     def explore(self):
         x, y = self.map.find_start()
-        return self.explore_location(x, y, -1, set())
+        self.explore_location(x, y, -1, set())
+        return self.shortest_step_tally
 
     def explore_location(self, x, y, step_tally, bread_crumbs):
         if (x, y) in bread_crumbs:
             return
         bread_crumbs.add((x, y))
         step_tally += 1
-        print(f'\nStep {step_tally}')
-        print(self.render_map(x, y, bread_crumbs))
+        self.total_visits_counter += 1
+        if self.total_visits_counter % 100000 == 0:
+            print(f'\nStep {step_tally}')
+            print(self.render_map(x, y, bread_crumbs))
         if x == self.end_x and y == self.end_y:
-            print(f'Step taken {step_tally}')
-            # End Found. todo: collect possible solutions here
+            # End Found
+            print(f'Steps taken {step_tally}')
+            if step_tally < self.shortest_step_tally:
+                self.shortest_step_tally = step_tally
             return
         self.look_north_of(x, y, step_tally, bread_crumbs.copy())
         self.look_south_of(x, y, step_tally, bread_crumbs.copy())
@@ -140,8 +151,7 @@ def part_one(filename):
     data = read_puzzle_input(filename)
     map = MapGrid(data)
     hiker = Hiker(map)
-    hiker.explore()
-    return -1
+    return hiker.explore()
 
 
 def part_two(filename):
@@ -151,7 +161,7 @@ def part_two(filename):
 
 long_filename = 'Day_12_input.txt'
 short_filename = 'Day_12_short_input.txt'
-print(f'Answer part one: {part_one(short_filename)}')
+print(f'Answer part one: {part_one(long_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
 
