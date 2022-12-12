@@ -26,11 +26,11 @@ class MapGrid:
             if y > 0:
                 rval.append('\n')
             for x in range(self.grid.shape[1]):
-                rval.append(str(self.grid[y][x])[2])
+                rval.append(self.grid[y][x].decode())
         return ''.join(rval)
 
     def char_at(self, x, y):
-        return str(self.grid[y][x])[2]
+        return self.grid[y][x].decode()
 
     def altitude_at(self, x, y):
         c = self.char_at(x, y)
@@ -52,6 +52,67 @@ class MapGrid:
                 if self.char_at(x, y) == 'E':
                     return (x, y)
 
+    def delta_altitude_between(self, x1, y1, x2, y2):
+        altitude1 = self.map.altitude_at(x1, y1)
+        altitude2 = self.map.altitude_at(x2, y2)
+        delta_altitude = altitude2 - altitude1
+        return delta_altitude
+
+
+class Hiker:
+    def __init__(self, map: MapGrid):
+        self.map = map
+        # self.current_x, self.current_y = map.find_start()
+        self.end_x, self.end_y = map.find_end()
+        self.step_tally = 0
+        self.bread_crumbs = set()
+
+    def explore(self):
+        x, y = self.map.find_start()
+        return self.explore_location(x, y)
+
+    def explore_location(self, x, y):
+        if (x, y) in self.bread_crumbs:
+            return self.step_tally
+        self.bread_crumbs.add((x, y))
+        self.step_tally += 1
+        if x == self.end_x and y == self.end_y:
+            # End Found. todo: collect possible solutions here
+            return self.step_tally
+        self.look_north_of(x, y)
+        self.look_south_of(x, y)
+        self.look_east_of(x, y)
+        self.look_west_of(x, y)
+        return self.step_tally
+
+    def look_north_of(self, x, y):
+        if y <= 0:
+            return
+        delta = self.map.delta_altitude_between(x, y, x, y - 1)
+        if delta <= 1:
+            self.explore_location(x, y - 1)
+
+    def look_south_of(self, x, y):
+        if y >= self.map.grid.shape[0] - 1:
+            return
+        delta = self.map.delta_altitude_between(x, y, x, y + 1)
+        if delta <= 1:
+            self.explore_location(x, y + 1)
+
+    def look_east_of(self, x, y):
+        if x >= self.map.grid.shape[1] - 1:
+            return
+        delta = self.map.delta_altitude_between(x, y, x + 1, y)
+        if delta <= 1:
+            self.explore_location(x + 1, y)
+
+    def look_west_of(self, x, y):
+        if x <= 0:
+            return
+        delta = self.map.delta_altitude_between(x, y, x - 1, y)
+        if delta <= 1:
+            self.explore_location(x - 1, y)
+
 
 def part_one(filename):
     data = read_puzzle_input(filename)
@@ -62,45 +123,6 @@ def part_one(filename):
 def part_two(filename):
     data = read_puzzle_input(filename)
     return -1
-
-
-class Hiker:
-    def __init__(self, map: MapGrid):
-        self.map = map
-        # self.current_x, self.current_y = map.find_start()
-        self.end_x, self.end_y = map.find_end()
-        self.step_tally = 0
-
-    def explore(self):
-        x, y = self.map.find_start()
-        return self.explore_location(x, y)
-
-    def explore_location(self, x, y):
-        self.step_tally += 1
-        if x == self.end_x and y == self.end_y:
-            return self.step_tally
-        self.look_north_of(x, y)
-        self.look_south_of(x, y)
-        self.look_east_of(x, y)
-        self.look_west_of(x, y)
-
-    def look_north_of(self, x, y):
-        if (y <= 0):
-            return
-        current_altitude = self.map.altitude_at(x, y)
-        adjacent_altitude = self.map.altitude_at(x, y - 1)
-        delta_altitude = abs(current_altitude - adjacent_altitude)
-        if delta_altitude <= 1:
-            self.explore_location(x, y - 1)
-
-    def look_south_of(self, x, y):
-        pass
-
-    def look_east_of(self, x, y):
-        pass
-
-    def look_west_of(self, x, y):
-        pass
 
 
 long_filename = 'Day_12_input.txt'
