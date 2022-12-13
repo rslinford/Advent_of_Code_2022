@@ -26,15 +26,16 @@ def compare_objects(left, right):
         right = [right]
     return compare_lists(left, right)
 
+
 def compare_lists(left, right):
     for i in range(len(left)):
+        if i >= len(right):
+            return -1
         left_item = left[i]
         right_item = right[i]
         result = compare_objects(left_item, right_item)
         if result == 1 or result == -1:
             return result
-        if i >= len(right):
-            return -1
     if len(left) < len(right):
         return 1
     if len(left) > len(right):
@@ -42,12 +43,12 @@ def compare_lists(left, right):
     return 0
 
 
-
 def part_one(filename):
     data = read_puzzle_input(filename)
     left = None
     index = 0
     tally = 0
+    indices = []
     for line in data:
         if not line:
             continue
@@ -58,8 +59,10 @@ def part_one(filename):
         index += 1
         print(index, left, right)
         if compare_lists(left, right) == 1:
+            indices.append(index)
             tally += index
         left = None
+    print(f'Indices: {indices}')
     return tally
 
 
@@ -70,9 +73,8 @@ def part_two(filename):
 
 long_filename = 'Day_13_input.txt'
 short_filename = 'Day_13_short_input.txt'
-print(f'Answer part one: {part_one(short_filename)}')
+print(f'Answer part one: {part_one(long_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
-
 
 # class Test(unittest.TestCase):
 #     def test_part_one(self):
