@@ -57,24 +57,38 @@ def part_one(filename):
             continue
         right = eval(line)
         index += 1
-        print(index, left, right)
         if compare_lists(left, right) == 1:
             indices.append(index)
             tally += index
         left = None
-    print(f'Indices: {indices}')
     return tally
 
 
 def part_two(filename):
     data = read_puzzle_input(filename)
-    return -1
+    sorted_list = [[[2]], [[6]]]
+    for line in data:
+        inserted = False
+        if not line:
+            continue
+        x = eval(line)
+        for i in range(len(sorted_list)):
+            result = compare_lists(x, sorted_list[i])
+            if result == 1:
+                sorted_list.insert(i, x)
+                inserted = True
+                break
+        if not inserted:
+            sorted_list.append(x)
+        two_index = sorted_list.index([[2]]) + 1
+    six_index = sorted_list.index([[6]]) + 1
+    return two_index * six_index
 
 
 long_filename = 'Day_13_input.txt'
 short_filename = 'Day_13_short_input.txt'
 print(f'Answer part one: {part_one(long_filename)}')
-print(f'Answer part two: {part_two(short_filename)}')
+print(f'Answer part two: {part_two(long_filename)}')
 
 # class Test(unittest.TestCase):
 #     def test_part_one(self):
