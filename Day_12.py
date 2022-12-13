@@ -1,5 +1,6 @@
 import math
 import unittest
+from enum import Enum, auto
 
 import numpy as np
 from colorama import Fore, Back, Style
@@ -63,6 +64,13 @@ class MapGrid:
         return delta_altitude
 
 
+class Direction(Enum):
+    NORTH = auto()
+    SOUTH = auto()
+    EAST = auto()
+    WEST = auto()
+
+
 class Hiker:
     def __init__(self, map: MapGrid):
         self.map = map
@@ -103,7 +111,7 @@ class Hiker:
         bread_crumbs.add((x, y))
         step_tally += 1
         self.total_visits_counter += 1
-        if self.total_visits_counter % 100000 == 0:
+        if self.total_visits_counter % 10 == 0:
             print(f'\nStep {step_tally}')
             print(self.render_map(x, y, bread_crumbs))
         if x == self.end_x and y == self.end_y:
@@ -112,41 +120,54 @@ class Hiker:
             if step_tally < self.shortest_step_tally:
                 self.shortest_step_tally = step_tally
             return
-        self.look_north_of(x, y, step_tally, bread_crumbs.copy())
-        self.look_south_of(x, y, step_tally, bread_crumbs.copy())
-        self.look_east_of(x, y, step_tally, bread_crumbs.copy())
-        self.look_west_of(x, y, step_tally, bread_crumbs.copy())
+        deltas = []
+        deltas.append((self.look_north_of(x, y, step_tally, bread_crumbs.copy()), Direction.NORTH))
+        deltas.append((self.look_south_of(x, y, step_tally, bread_crumbs.copy()), Direction.SOUTH))
+        deltas.append((self.look_east_of(x, y, step_tally, bread_crumbs.copy()), Direction.EAST))
+        deltas.append((self.look_west_of(x, y, step_tally, bread_crumbs.copy()), Direction.WEST))
+        deltas.sort(key=lambda tup: tup[0], reverse=True)
+        for delta, direction in deltas:
+            if delta == -math.inf:
+                continue # edge of map case
+            if delta > 1:
+                continue # too steep case
+            match direction:
+                case Direction.NORTH:
+                    self.explore_location(x, y - 1, step_tally, bread_crumbs)
+                case Direction.SOUTH:
+                    self.explore_location(x, y + 1, step_tally, bread_crumbs)
+                case Direction.EAST:
+                    self.explore_location(x + 1, y, step_tally, bread_crumbs)
+                case Direction.WEST:
+                    self.explore_location(x - 1, y, step_tally, bread_crumbs)
         return
 
     def look_north_of(self, x, y, step_tally, bread_crumbs):
         if y <= 0:
-            return
+            return -math.inf
         delta = self.map.delta_altitude_between(x, y, x, y - 1)
-        if delta <= 1:
-            self.explore_location(x, y - 1, step_tally, bread_crumbs)
+        return delta
 
     def look_south_of(self, x, y, step_tally, bread_crumbs):
         if y >= self.map.grid.shape[0] - 1:
-            return
+            return -math.inf
         delta = self.map.delta_altitude_between(x, y, x, y + 1)
-        if delta <= 1:
-            self.explore_location(x, y + 1, step_tally, bread_crumbs)
+        return delta
 
     def look_east_of(self, x, y, step_tally, bread_crumbs):
         if x >= self.map.grid.shape[1] - 1:
-            return
+            return -math.inf
         delta = self.map.delta_altitude_between(x, y, x + 1, y)
-        if delta <= 1:
-            self.explore_location(x + 1, y, step_tally, bread_crumbs)
+        return delta
 
     def look_west_of(self, x, y, step_tally, bread_crumbs):
         if x <= 0:
-            return
+            return -math.inf
         delta = self.map.delta_altitude_between(x, y, x - 1, y)
-        if delta <= 1:
-            self.explore_location(x - 1, y, step_tally, bread_crumbs)
+        return delta
 
 
+# 1537 is wrong
 def part_one(filename):
     data = read_puzzle_input(filename)
     map = MapGrid(data)
