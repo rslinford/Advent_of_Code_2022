@@ -63,7 +63,7 @@ class CaveMap:
 
     def fall_down(self):
         fallen = False
-        while self.sand_y < self.max_y:
+        while True:
             if self.char_at(self.sand_x, self.sand_y + 1) == '.':
                 self.sand_y += 1
                 fallen = True
@@ -90,8 +90,7 @@ class CaveMap:
     def simulate_sand(self):
         self.sand_x, self.sand_y = 500, 0
         while True:
-            if not self.fall_down():
-                break
+            self.fall_down()
             if not self.fall_down_and_left():
                 if not self.fall_down_and_right():
                     break
@@ -138,10 +137,15 @@ def part_one(filename):
     min_x, max_x, min_y, max_y = determine_xy_min_max(rows_of_points)
     cm = CaveMap(min_x, max_x, max_y)
     cm.draw_rock_lines(rows_of_points)
+    tally = 0
     while True:
-        cm.simulate_sand()
-        print(cm)
-        input()
+        try:
+            cm.simulate_sand()
+            tally += 1
+        except IndexError:
+            break
+        print(f'Sand {tally}\n{cm}')
+    return tally
 
 
 def part_two(filename):
@@ -151,7 +155,7 @@ def part_two(filename):
 
 filename = 'Day_14_input.txt'
 short_filename = 'Day_14_short_input.txt'
-print(f'Answer part one: {part_one(short_filename)}')
+print(f'Answer part one: {part_one(filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
 # class Test(unittest.TestCase):
