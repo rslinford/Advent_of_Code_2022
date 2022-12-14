@@ -10,6 +10,9 @@ def read_puzzle_input(filename):
         data = f.read().strip().split('\n')
     return data
 
+class NoMoreRoomException(Exception):
+    pass
+
 
 class CaveMap:
     grid: np.chararray
@@ -95,6 +98,8 @@ class CaveMap:
                 if not self.fall_down_and_right():
                     break
         self.draw_char(self.sand_x, self.sand_y, 'o')
+        if self.sand_y == 0:
+            raise NoMoreRoomException
 
 
 def parse_points(data):
@@ -139,19 +144,21 @@ def part_two(filename):
     cm.draw_rock_lines(rows_of_points)
     tally = 0
     while True:
-        cm.simulate_sand()
-        tally += 1
-        print(f'Sand {tally}\n{cm}')
-        input()
+        try:
+            cm.simulate_sand()
+            tally += 1
+        except NoMoreRoomException:
+            tally += 1
+            break
+        if tally % 5000 == 0:
+            print(f'Sand {tally}\n{cm}')
+            input()
     return tally
-
-
 
 
 filename = 'Day_14_input.txt'
 short_filename = 'Day_14_short_input.txt'
-print(f'Answer part two: {part_two(short_filename)}')
-
+print(f'Answer part two: {part_two(filename)}')
 
 # class Test(unittest.TestCase):
 #     def test_part_one(self):
