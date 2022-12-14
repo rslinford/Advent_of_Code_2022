@@ -1,8 +1,7 @@
 import math
+import re
 
 import numpy as np
-import re
-import unittest
 
 
 def read_puzzle_input(filename):
@@ -14,7 +13,7 @@ def read_puzzle_input(filename):
 class CaveMap:
     grid: np.chararray
 
-    def __init__(self, min_x, max_x, min_y, max_y):
+    def __init__(self, min_x, max_x, max_y):
         min_y = 0
         width = max_x - min_x + 1
         height = max_y - min_y + 1
@@ -22,6 +21,9 @@ class CaveMap:
         self.grid[:] = '.'
         self.min_x = min_x
         self.min_y = min_y
+        self.max_x = max_x
+        self.max_y = max_y
+        self.sand_x, self.sand_y = 0, 0
 
     def __repr__(self):
         rval = []
@@ -55,6 +57,45 @@ class CaveMap:
 
     def draw_char(self, x, y, c):
         self.grid[y - self.min_y][x - self.min_x] = c
+
+    def char_at(self, x, y):
+        return self.grid[y - self.min_y][x - self.min_x].decode()
+
+    def fall_down(self):
+        fallen = False
+        while self.sand_y < self.max_y:
+            if self.char_at(self.sand_x, self.sand_y + 1) == '.':
+                self.sand_y += 1
+                fallen = True
+            else:
+                break
+        return fallen
+
+    def fall_down_and_left(self):
+        if self.char_at(self.sand_x - 1, self.sand_y + 1) == '.':
+            self.sand_x -= 1
+            self.sand_y += 1
+            return True
+        else:
+            return False
+
+    def fall_down_and_right(self):
+        if self.char_at(self.sand_x + 1, self.sand_y + 1) == '.':
+            self.sand_x += 1
+            self.sand_y += 1
+            return True
+        else:
+            return False
+
+    def simulate_sand(self):
+        self.sand_x, self.sand_y = 500, 0
+        while True:
+            if not self.fall_down():
+                break
+            if not self.fall_down_and_left():
+                if not self.fall_down_and_right():
+                    break
+        self.draw_char(self.sand_x, self.sand_y, 'o')
 
 
 def parse_points(data):
@@ -95,11 +136,12 @@ def part_one(filename):
     data = read_puzzle_input(filename)
     rows_of_points = parse_points(data)
     min_x, max_x, min_y, max_y = determine_xy_min_max(rows_of_points)
-    cm = CaveMap(min_x, max_x, min_y, max_y)
+    cm = CaveMap(min_x, max_x, max_y)
     cm.draw_rock_lines(rows_of_points)
-    print(cm)
-    print(rows_of_points)
-    return -1
+    while True:
+        cm.simulate_sand()
+        print(cm)
+        input()
 
 
 def part_two(filename):
@@ -112,12 +154,11 @@ short_filename = 'Day_14_short_input.txt'
 print(f'Answer part one: {part_one(short_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
-
-class Test(unittest.TestCase):
-    def test_part_one(self):
-        self.assertEqual(-1, part_one(short_filename))
-        self.assertEqual(-1, part_one(filename))
-
-    def test_part_two(self):
-        self.assertEqual(-1, part_two(short_filename))
-        self.assertEqual(-1, part_two(filename))
+# class Test(unittest.TestCase):
+#     def test_part_one(self):
+#         self.assertEqual(-1, part_one(short_filename))
+#         self.assertEqual(-1, part_one(filename))
+#
+#     def test_part_two(self):
+#         self.assertEqual(-1, part_two(short_filename))
+#         self.assertEqual(-1, part_two(filename))
