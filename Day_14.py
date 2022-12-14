@@ -1,5 +1,6 @@
 import math
 import re
+import unittest
 
 import numpy as np
 
@@ -15,8 +16,8 @@ class CaveMap:
 
     def __init__(self, min_x, max_x, max_y):
         min_y = 0
-        width = max_x - min_x + 1
-        height = max_y - min_y + 1
+        width = (max_x - min_x + 1) * 10
+        height = max_y - min_y + 1 + 2
         self.grid = np.chararray((height, width))
         self.grid[:] = '.'
         self.min_x = min_x
@@ -24,6 +25,8 @@ class CaveMap:
         self.max_x = max_x
         self.max_y = max_y
         self.sand_x, self.sand_y = 0, 0
+        self.floor = max_y + 1
+        self.x_offset = width // 2
 
     def __repr__(self):
         rval = []
@@ -32,10 +35,7 @@ class CaveMap:
             if y > 0:
                 rval.append('\n')
             for x in range(self.grid.shape[1]):
-                if x + self.min_x == 500 and y + self.min_y == 0:
-                    rval.append('+')
-                else:
-                    rval.append(self.grid[y][x].decode())
+                rval.append(self.grid[y][x].decode())
         return ''.join(rval)
 
     def draw_rock_lines(self, rows_of_points):
@@ -53,18 +53,18 @@ class CaveMap:
                     if x1 - x2 > 0:
                         x1, x2 = x2, x1
                     for x in range(x1, x2 + 1):
-                        self.grid[y1 - self.min_y][x - self.min_x] = '#'
+                        self.grid[y1 - self.min_y][x - self.min_x + self.x_offset] = '#'
 
     def draw_char(self, x, y, c):
-        self.grid[y - self.min_y][x - self.min_x] = c
+        self.grid[y - self.min_y][x - self.min_x + self.x_offset] = c
 
     def char_at(self, x, y):
-        return self.grid[y - self.min_y][x - self.min_x].decode()
+        return self.grid[y - self.min_y][x - self.min_x + self.x_offset].decode()
 
     def fall_down(self):
         fallen = False
         while True:
-            if self.char_at(self.sand_x, self.sand_y + 1) == '.':
+            if self.char_at(self.sand_x, self.sand_y + 1) == '.' and self.sand_y < self.floor:
                 self.sand_y += 1
                 fallen = True
             else:
@@ -72,7 +72,7 @@ class CaveMap:
         return fallen
 
     def fall_down_and_left(self):
-        if self.char_at(self.sand_x - 1, self.sand_y + 1) == '.':
+        if self.char_at(self.sand_x - 1, self.sand_y + 1) == '.' and self.sand_y < self.floor:
             self.sand_x -= 1
             self.sand_y += 1
             return True
@@ -80,7 +80,7 @@ class CaveMap:
             return False
 
     def fall_down_and_right(self):
-        if self.char_at(self.sand_x + 1, self.sand_y + 1) == '.':
+        if self.char_at(self.sand_x + 1, self.sand_y + 1) == '.' and self.sand_y < self.floor:
             self.sand_x += 1
             self.sand_y += 1
             return True
@@ -131,7 +131,7 @@ def determine_xy_min_max(rows_of_points):
     return min_x, max_x, min_y, max_y
 
 
-def part_one(filename):
+def part_two(filename):
     data = read_puzzle_input(filename)
     rows_of_points = parse_points(data)
     min_x, max_x, min_y, max_y = determine_xy_min_max(rows_of_points)
@@ -139,30 +139,25 @@ def part_one(filename):
     cm.draw_rock_lines(rows_of_points)
     tally = 0
     while True:
-        try:
-            cm.simulate_sand()
-            tally += 1
-        except IndexError:
-            break
+        cm.simulate_sand()
+        tally += 1
         print(f'Sand {tally}\n{cm}')
+        input()
     return tally
 
 
-def part_two(filename):
-    data = read_puzzle_input(filename)
-    return -1
 
 
 filename = 'Day_14_input.txt'
 short_filename = 'Day_14_short_input.txt'
-print(f'Answer part one: {part_one(filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
+
 
 # class Test(unittest.TestCase):
 #     def test_part_one(self):
-#         self.assertEqual(-1, part_one(short_filename))
-#         self.assertEqual(-1, part_one(filename))
-#
+#         self.assertEqual(24, part_one(short_filename))
+#         self.assertEqual(655, part_one(filename))
+
 #     def test_part_two(self):
 #         self.assertEqual(-1, part_two(short_filename))
 #         self.assertEqual(-1, part_two(filename))
