@@ -10,10 +10,12 @@ def read_puzzle_input(filename):
         data = f.read().strip().split('\n')
     return data
 
+
 class CaveMap:
     grid: np.chararray
 
     def __init__(self, min_x, max_x, min_y, max_y):
+        min_y = 0
         width = max_x - min_x + 1
         height = max_y - min_y + 1
         self.grid = np.chararray((height, width))
@@ -23,12 +25,36 @@ class CaveMap:
 
     def __repr__(self):
         rval = []
+        rval.append(f'({self.min_x}, {self.min_y})\n')
         for y in range(self.grid.shape[0]):
             if y > 0:
                 rval.append('\n')
             for x in range(self.grid.shape[1]):
-                rval.append(self.grid[y][x].decode())
+                if x + self.min_x == 500 and y + self.min_y == 0:
+                    rval.append('+')
+                else:
+                    rval.append(self.grid[y][x].decode())
         return ''.join(rval)
+
+    def draw_rock_lines(self, rows_of_points):
+        for row in rows_of_points:
+            for i in range(len(row) - 1):
+                x1, y1 = row[i][0], row[i][1]
+                x2, y2 = row[i + 1][0], row[i + 1][1]
+                if x1 == x2:
+                    if y1 - y2 > 0:
+                        y1, y2 = y2, y1
+                    for y in range(y1, y2 + 1):
+                        self.draw_char(x1, y, '#')
+                else:
+                    assert (y1 == y2)
+                    if x1 - x2 > 0:
+                        x1, x2 = x2, x1
+                    for x in range(x1, x2 + 1):
+                        self.grid[y1 - self.min_y][x - self.min_x] = '#'
+
+    def draw_char(self, x, y, c):
+        self.grid[y - self.min_y][x - self.min_x] = c
 
 
 def parse_points(data):
@@ -41,7 +67,7 @@ def parse_points(data):
             result = re.search('(\d+),(\d+)', p)
             x = int(result.group(1))
             y = int(result.group(2))
-            points.append((x,y))
+            points.append((x, y))
 
     return rval
 
@@ -70,6 +96,7 @@ def part_one(filename):
     rows_of_points = parse_points(data)
     min_x, max_x, min_y, max_y = determine_xy_min_max(rows_of_points)
     cm = CaveMap(min_x, max_x, min_y, max_y)
+    cm.draw_rock_lines(rows_of_points)
     print(cm)
     print(rows_of_points)
     return -1
