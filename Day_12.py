@@ -74,10 +74,7 @@ class Direction(Enum):
 class Hiker:
     def __init__(self, map: MapGrid):
         self.map = map
-        # self.current_x, self.current_y = map.find_start()
         self.end_x, self.end_y = map.find_end()
-        # self.step_tally = 0
-        # self.bread_crumbs = set()
         self.shortest_step_tally = math.inf
         self.total_visits_counter = 0
 

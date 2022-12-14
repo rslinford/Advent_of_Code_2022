@@ -18,8 +18,8 @@ def part_two(filename):
     return -1
 
 
-filename = 'Day_12_input.txt'
-short_filename = 'Day_12_short_input.txt'
+filename = 'Day_14_input.txt'
+short_filename = 'Day_14_short_input.txt'
 print(f'Answer part one: {part_one(short_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
