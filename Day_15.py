@@ -8,8 +8,43 @@ def read_puzzle_input(filename):
     return data
 
 
+class Beacon:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return f'Beacon({self.x}, {self.y})'
+
+
+class Sensor:
+    def __init__(self, x, y, beacon: Beacon):
+        self.x = x
+        self.y = y
+        self.beacon = beacon
+
+    def __repr__(self):
+        return f'Sensor({self.x}, {self.y}, {self.beacon})'
+
+
+def parse_sensors(data):
+    sensors = []
+    for line in data:
+        result = re.search('Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)', line)
+        xs = int(result.group(1))
+        ys = int(result.group(2))
+        xb = int(result.group(3))
+        yb = int(result.group(4))
+        sensors.append(Sensor(xs, ys, Beacon(xb, yb)))
+
+    return sensors
+
+
 def part_one(filename):
     data = read_puzzle_input(filename)
+    sensors = parse_sensors(data)
+    for sensor in sensors:
+        print(sensor)
     return -1
 
 
