@@ -19,7 +19,7 @@ def part_two(filename):
 
 
 day_of_month = '15'
-filename = f'Day_{day_of_month}_long_input.txt'
+long_filename = f'Day_{day_of_month}_long_input.txt'
 short_filename = f'Day_{day_of_month}_short_input.txt'
 print(f'Answer part one: {part_one(short_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
@@ -28,8 +28,8 @@ print(f'Answer part two: {part_two(short_filename)}')
 class Test(unittest.TestCase):
     def test_part_one(self):
         self.assertEqual(-1, part_one(short_filename))
-        self.assertEqual(-1, part_one(filename))
+        self.assertEqual(-1, part_one(long_filename))
 
     def test_part_two(self):
         self.assertEqual(-1, part_two(short_filename))
-        self.assertEqual(-1, part_two(filename))
+        self.assertEqual(-1, part_two(long_filename))
