@@ -1,6 +1,9 @@
 import math
 import re
+import unittest
+
 from colorama import Fore, Back, Style
+
 
 def read_puzzle_input(filename):
     with open(filename, 'r') as f:
@@ -65,8 +68,30 @@ class CaveMap:
                 return 'B'
         return '.'
 
+    def calculate_target_row_coverage(self):
+        """Calculates the number of positions that cannot have a beacon along target row."""
+        overlap = set()
+        for sensor in self.sensors:
+            md = sensor.distance_to_beacon()
+            proximity = md - abs(sensor.y - self.target_row)
+            if proximity >= 0:
+                starting_x = sensor.x - proximity
+                ending_x = sensor.x + proximity
+                for i in range(starting_x, ending_x + 1):
+                    overlap.add(i)
+        return len(overlap) - self.count_beacons_on_target_row()
+
+    def count_beacons_on_target_row(self):
+        beacons = set()
+        for sensor in self.sensors:
+            if sensor.beacon.y == self.target_row:
+                beacons.add(sensor.beacon.x)
+        return len(beacons)
+
+
 def calculate_manhatten_distance(x1, y1, x2, y2):
-    return abs(x1-x2) + abs(y1-y2)
+    return abs(x1 - x2) + abs(y1 - y2)
+
 
 def determine_xy_min_max(sensors: list[Sensor]):
     min_x = math.inf
@@ -110,15 +135,16 @@ def part_one(filename, target_row):
     data = read_puzzle_input(filename)
     sensors = parse_sensors(data)
     cm = CaveMap(sensors, target_row)
-    print(cm)
-    return -1
+    cm.calculate_target_row_coverage()
+    return cm.calculate_target_row_coverage()
 
 
 def part_two(filename):
     data = read_puzzle_input(filename)
     return -1
 
-short = True
+
+short = False
 
 day_of_month = '15'
 if short:
@@ -126,16 +152,15 @@ if short:
     target_row = 10
 else:
     filename = f'Day_{day_of_month}_long_input.txt'
-    target_row = 2,000,000
+    target_row = 2000000
 print(f'Answer part one: {part_one(filename, target_row)}')
 print(f'Answer part two: {part_two(filename)}')
 
-
 # class Test(unittest.TestCase):
 #     def test_part_one(self):
-#         self.assertEqual(-1, part_one(short_filename))
-#         self.assertEqual(-1, part_one(long_filename))
+#         self.assertEqual(-1, part_one(filename))
+#         self.assertEqual(-1, part_one(filename))
 #
 #     def test_part_two(self):
-#         self.assertEqual(-1, part_two(short_filename))
-#         self.assertEqual(-1, part_two(long_filename))
+#         self.assertEqual(-1, part_two(filename))
+#         self.assertEqual(-1, part_two(filename))
