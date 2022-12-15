@@ -89,7 +89,20 @@ class CaveMap:
         return len(beacons)
 
     def find_distress_beacon(self, search_space):
-        return 1, 1
+        for y in range(search_space + 1):
+            print(f'Percent complete {y/search_space}')
+            for x in range(search_space + 1):
+                if self.distress_beacon_is_here(x, y):
+                    return x, y
+        return None
+
+    def distress_beacon_is_here(self, x, y):
+        for sensor in self.sensors:
+            radius = sensor.distance_to_beacon()
+            distance = calculate_manhatten_distance(sensor.x, sensor.y, x, y)
+            if distance <= radius:
+                return False
+        return True
 
 
 def calculate_manhatten_distance(x1, y1, x2, y2):
@@ -142,15 +155,15 @@ def part_one(filename, target_row):
     return cm.calculate_target_row_coverage()
 
 
-def part_two(filename):
-    data = read_puzzle_input(filename, search_space)
+def part_two(filename, search_space):
+    data = read_puzzle_input(filename)
     sensors = parse_sensors(data)
     cm = CaveMap(sensors, target_row)
-    x, y = cm.find_distress_beacon()
+    x, y = cm.find_distress_beacon(search_space)
     return x * 4000000 + y
 
 
-short = True
+short = False
 
 day_of_month = '15'
 if short:
