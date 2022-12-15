@@ -1,7 +1,6 @@
 import math
 import re
-import unittest
-
+from colorama import Fore, Back, Style
 
 def read_puzzle_input(filename):
     with open(filename, 'r') as f:
@@ -27,9 +26,12 @@ class Sensor:
     def __repr__(self):
         return f'Sensor({self.x}, {self.y}, {self.beacon})'
 
+    def distance_to_beacon(self):
+        return calculate_manhatten_distance(self.x, self.y, self.beacon.x, self.beacon.y)
+
 
 class CaveMap:
-    def __init__(self, sensors):
+    def __init__(self, sensors, target_row):
         min_x, max_x, min_y, max_y = determine_xy_min_max(sensors)
         self.x_offset = 2
         self.min_x = min_x - self.x_offset
@@ -39,14 +41,19 @@ class CaveMap:
         self.width = max_x - min_x + 1
         self.height = max_y - min_y + 1
         self.sensors = sensors
+        self.target_row = target_row
 
     def __repr__(self):
-        rval = [f'({self.min_x}, {self.min_y})\n']
+        rval = [f'({self.min_x}, {self.min_y}) target row {self.target_row}\n']
         for y in range(self.height):
             if y > 0:
                 rval.append('\n')
+            if y == self.target_row:
+                rval.append(Fore.CYAN)
             for x in range(self.width):
                 rval.append(self.char_at(x, y))
+            if y == self.target_row:
+                rval.append(Style.RESET_ALL)
         return ''.join(rval)
 
     def char_at(self, x, y):
@@ -58,6 +65,8 @@ class CaveMap:
                 return 'B'
         return '.'
 
+def calculate_manhatten_distance(x1, y1, x2, y2):
+    return abs(x1-x2) + abs(y1-y2)
 
 def determine_xy_min_max(sensors: list[Sensor]):
     min_x = math.inf
@@ -97,10 +106,10 @@ def parse_sensors(data):
     return sensors
 
 
-def part_one(filename):
+def part_one(filename, target_row):
     data = read_puzzle_input(filename)
     sensors = parse_sensors(data)
-    cm = CaveMap(sensors)
+    cm = CaveMap(sensors, target_row)
     print(cm)
     return -1
 
@@ -109,12 +118,17 @@ def part_two(filename):
     data = read_puzzle_input(filename)
     return -1
 
+short = True
 
 day_of_month = '15'
-long_filename = f'Day_{day_of_month}_long_input.txt'
-short_filename = f'Day_{day_of_month}_short_input.txt'
-print(f'Answer part one: {part_one(short_filename)}')
-print(f'Answer part two: {part_two(short_filename)}')
+if short:
+    filename = f'Day_{day_of_month}_short_input.txt'
+    target_row = 10
+else:
+    filename = f'Day_{day_of_month}_long_input.txt'
+    target_row = 2,000,000
+print(f'Answer part one: {part_one(filename, target_row)}')
+print(f'Answer part two: {part_two(filename)}')
 
 
 # class Test(unittest.TestCase):
