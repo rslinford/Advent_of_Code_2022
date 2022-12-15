@@ -88,6 +88,9 @@ class CaveMap:
                 beacons.add(sensor.beacon.x)
         return len(beacons)
 
+    def find_distress_beacon(self, search_space):
+        return 1, 1
+
 
 def calculate_manhatten_distance(x1, y1, x2, y2):
     return abs(x1 - x2) + abs(y1 - y2)
@@ -140,21 +143,26 @@ def part_one(filename, target_row):
 
 
 def part_two(filename):
-    data = read_puzzle_input(filename)
-    return -1
+    data = read_puzzle_input(filename, search_space)
+    sensors = parse_sensors(data)
+    cm = CaveMap(sensors, target_row)
+    x, y = cm.find_distress_beacon()
+    return x * 4000000 + y
 
 
-short = False
+short = True
 
 day_of_month = '15'
 if short:
     filename = f'Day_{day_of_month}_short_input.txt'
     target_row = 10
+    search_space = 20
 else:
     filename = f'Day_{day_of_month}_long_input.txt'
     target_row = 2000000
+    search_space = 4000000
 print(f'Answer part one: {part_one(filename, target_row)}')
-print(f'Answer part two: {part_two(filename)}')
+print(f'Answer part two: {part_two(filename, search_space)}')
 
 # class Test(unittest.TestCase):
 #     def test_part_one(self):
