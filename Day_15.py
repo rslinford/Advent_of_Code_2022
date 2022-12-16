@@ -1,8 +1,7 @@
 import math
 import re
-import unittest
 
-from colorama import Fore, Back, Style
+from colorama import Fore, Style
 
 
 def read_puzzle_input(filename):
@@ -31,6 +30,31 @@ class Sensor:
 
     def distance_to_beacon(self):
         return calculate_manhatten_distance(self.x, self.y, self.beacon.x, self.beacon.y)
+
+    def find_neighboring_points(self):
+        rval = []
+        md = self.distance_to_beacon()
+        # North West
+        x1 = self.x - 1
+        y1 = self.y - md
+        for i in range(md):
+            rval.append((x1 - i, y1 + i))
+        # North East
+        x1 = self.x + 1
+        y1 = self.y - md
+        for i in range(md):
+            rval.append((x1 + i, y1 + i))
+        # South East
+        x1 = self.x + md
+        y1 = self.y + 1
+        for i in range(md):
+            rval.append((x1 - i, y1 + i))
+        # South West
+        x1 = self.x - md
+        y1 = self.y + 1
+        for i in range(md):
+            rval.append((x1 + i, y1 + i))
+        return rval
 
 
 class CaveMap:
@@ -88,10 +112,20 @@ class CaveMap:
                 beacons.add(sensor.beacon.x)
         return len(beacons)
 
-    def find_distress_beacon(self, search_space):
+    def find_distress_beacon_naive(self, search_space):
         for y in range(search_space + 1):
-            print(f'Percent complete {y/search_space}')
+            print(f'Percent complete {y / search_space}')
             for x in range(search_space + 1):
+                if self.distress_beacon_is_here(x, y):
+                    return x, y
+        return None
+
+    def find_distress_beacon(self, search_space):
+        sensor: Sensor
+        for sensor in self.sensors:
+            for point in sensor.find_neighboring_points():
+                x = point[0]
+                y = point[1]
                 if self.distress_beacon_is_here(x, y):
                     return x, y
         return None
@@ -163,7 +197,7 @@ def part_two(filename, search_space):
     return x * 4000000 + y
 
 
-short = False
+short = True
 
 day_of_month = '15'
 if short:

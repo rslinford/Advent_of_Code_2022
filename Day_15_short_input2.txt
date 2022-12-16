@@ -1,2 +1,1 @@
-Sensor at x=2, y=18: closest beacon is at x=-2, y=15
-Sensor at x=8, y=7: closest beacon is at x=2, y=10
+Sensor at x=10, y=10: closest beacon is at x=10, y=12
