@@ -1,5 +1,6 @@
 import re
 import unittest
+import copy
 
 
 class Valve:
@@ -7,8 +8,16 @@ class Valve:
         self.label = label
         self.flow_rate = flow_rate
         self.neighbors = []
+        self.is_open = False
+
     def __repr__(self):
         return f'Valve({self.label}, {self.flow_rate}, {self.neighbors})'
+
+
+class CaveSystem:
+
+    def __init__(self):
+        pass
 
 
 def read_puzzle_input(filename):
@@ -34,8 +43,7 @@ def parse_lines(data):
 def part_one(filename):
     data = read_puzzle_input(filename)
     valves = parse_lines(data)
-    for v in valves.values():
-        print(v)
+    system = CaveSystem()
     return -1
 
 
@@ -49,7 +57,6 @@ long_filename = f'Day_{day_of_month}_long_input.txt'
 short_filename = f'Day_{day_of_month}_short_input.txt'
 print(f'Answer part one: {part_one(short_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
-
 
 # class Test(unittest.TestCase):
 #     def test_part_one(self):
