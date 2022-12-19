@@ -1,6 +1,9 @@
+import math
 import re
-import unittest
-import copy
+from itertools import permutations
+from typing import Tuple
+
+from numpy import asarray, diagonal, ndarray
 
 
 class Valve:
@@ -13,11 +16,8 @@ class Valve:
     def __repr__(self):
         return f'Valve({self.label}, {self.flow_rate}, {self.neighbors})'
 
-
-class CaveSystem:
-
-    def __init__(self):
-        pass
+    def __lt__(self, other):
+        return self.label < other.label
 
 
 def read_puzzle_input(filename):
@@ -26,24 +26,101 @@ def read_puzzle_input(filename):
     return data
 
 
-def parse_lines(data):
-    rval = {}
+def parse_lines(data: list[str]) -> list[Valve]:
+    rval = []
     for line in data:
         result = re.search('Valve (..) has flow rate=(\d+); tunnels? leads? to valves? (.+)', line)
         label = result.group(1)
-        flow_rate = result.group(2)
+        flow_rate = int(result.group(2))
         neighbors = result.group(3)
         valve = Valve(label, flow_rate)
         for v in neighbors.strip().split(', '):
             valve.neighbors.append(v)
-        rval[valve.label] = valve
+        rval.append(valve)
+        rval.sort()
     return rval
+
+
+# def breadth_first_search_recursive(valves: dict[str, Valve], valve_label: str, visited_valves):
+#     if valve_label in visited_valves:
+#         return
+#     visited_valves.add(valve_label)
+#     print(f'Visiting {valve_label}')
+#     for neighbor_label in valves[valve_label].neighbors:
+#         breadth_first_search_recursive(valves, neighbor_label, visited_valves)
+
+
+def initialize_adjacency_matrix(n):
+    m = [[math.inf for _ in range(n)] for _ in range(n)]
+    for i in range(n):
+        m[i][i] = 0
+    return m
+
+
+def look_up_index(label: str, valves: list[Valve]):
+    for index in range(len(valves)):
+        if valves[index].label == label:
+            return index
+    raise ValueError(f'Label {label} not found.')
+
+
+def check_and_convert_adjacency_matrix(adjacency_matrix):
+    mat = asarray(adjacency_matrix)
+    (nrows, ncols) = mat.shape
+    assert nrows == ncols
+    n = nrows
+    assert (diagonal(mat) == 0.0).all()
+    return (mat, n)
+
+
+def floyd_warshall_inplace(adjacency_matrix):
+    (mat, n) = check_and_convert_adjacency_matrix(adjacency_matrix)
+
+    for k in range(n):
+        for i in range(n):
+            for j in range(n):
+                mat[i, j] = min(mat[i, j], mat[i, k] + mat[k, j])
+
+    return mat
+
+
+def create_adjacency_matrix(valves: list[Valve]):
+    n = len(valves)
+    m = initialize_adjacency_matrix(n)
+    for i in range(n):
+        for adjacent_label in valves[i].neighbors:
+            adjacent_index = look_up_index(adjacent_label, valves)
+            m[i][adjacent_index] = 1
+    return m
+
+
+# def breadth_first_search(valves):
+#     breadth_first_search_recursive(valves, 'AA', set())
+
+def list_valves_that_flow(valves: list[Valve]) -> list[str]:
+    return [valve.label for valve in valves if valve.flow_rate > 0]
+
+
+def calculate_total_flow_for(ordering: Tuple[str, ...], valves: list[Valve], distance_matrix: ndarray):
+    current_label = 'AA'
+    timer = 30
+    for next_label in ordering:
+        current_index = look_up_index(current_label, valves)
+        next_index = look_up_index(next_label, valves)
 
 
 def part_one(filename):
     data = read_puzzle_input(filename)
     valves = parse_lines(data)
-    system = CaveSystem()
+    # breadth_first_search(valves)
+    adjacency_matrix = create_adjacency_matrix(valves)
+    distance_matrix = floyd_warshall_inplace(adjacency_matrix)
+    print(asarray(adjacency_matrix))
+    print(distance_matrix)
+    flow_valves = list_valves_that_flow(valves)
+    # result = [x for x in product(flow_valves, repeat=5) if all(x[i - 1] != x[i] for i in range(1, len(x)))]
+    for ordering in permutations(flow_valves):
+        calculate_total_flow_for(ordering, valves, distance_matrix)
     return -1
 
 

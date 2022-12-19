@@ -1,53 +1,146 @@
-class Edge:
-    def __init__(self, start, end, weight):
-        self.start = start
-        self.end = end
-        self.weight = weight
+"""
+floyd_warshall_fastest() is a fast Python+NumPy implementation of the Floyd-Warshall algorithm
+for finding the shortest path distances between all nodes of a weighted Graph. For more details see
+http://en.wikipedia.org/wiki/Floyd-Warshall_algorithm
+Tests and time comparisons to slower versions are provided.
+Result of test_floyd_warshall_compatibility_on_large_matrix():
+    Matrix size: 100
+    Slow algorithm (with allocations): 0.726 seconds elapsed
+    Running naive inplace algorithm: 0.725 seconds elapsed
+    Running partially vectorized algorithm (2 loops): 0.058 seconds elapsed
+    Running highly vectorized algorithm (1 loops): 0.003 seconds elapsed
+Amit Moscovich Eiger, 22/4/2014.
+"""
+from numpy import array, asarray, inf, zeros, minimum, diagonal, newaxis
+from numpy.random import randint
+import time
 
 
-class Graph:
+def check_and_convert_adjacency_matrix(adjacency_matrix):
+    mat = asarray(adjacency_matrix)
+
+    (nrows, ncols) = mat.shape
+    assert nrows == ncols
+    n = nrows
+
+    assert (diagonal(mat) == 0.0).all()
+
+    return (mat, n)
+
+
+def floyd_warshall_cormen(adjacency_matrix):
+    '''An exact implementation of the Floyd-Warshall algorithm as described in Cormen, Leiserson and Rivest.'''
+    (mat, n) = check_and_convert_adjacency_matrix(adjacency_matrix)
+
+    matrix_list = [mat]
+    for k in range(n):
+        next_mat = zeros((n, n))
+        for i in range(n):
+            for j in range(n):
+                next_mat[i, j] = min(mat[i, j], mat[i, k] + mat[k, j])
+        mat = next_mat
+        matrix_list.append(mat)
+
+    return matrix_list[-1]
+
+
+def floyd_warshall_inplace(adjacency_matrix):
+    (mat, n) = check_and_convert_adjacency_matrix(adjacency_matrix)
+
+    for k in range(n):
+        for i in range(n):
+            for j in range(n):
+                mat[i, j] = min(mat[i, j], mat[i, k] + mat[k, j])
+
+    return mat
+
+
+def floyd_warshall_faster(adjacency_matrix):
+    from numpy import array, asarray, inf, zeros, minimum, diagonal, newaxis
+    (mat, n) = check_and_convert_adjacency_matrix(adjacency_matrix)
+
+    for k in range(n):
+        for i in range(n):
+            mat[i, :] = minimum(mat[i, :], mat[i, k] + mat[k, :])
+
+    return mat
+
+
+def floyd_warshall_fastest(adjacency_matrix):
+    """
+    floyd_warshall_fastest(adjacency_matrix) -> shortest_path_distance_matrix Input An NxN NumPy array describing
+    the directed distances between N nodes. adjacency_matrix[i,j] = distance to travel directly from node i to node j
+    (without passing through other nodes) Notes: * If there is no edge connecting i->j then adjacency_matrix[i,
+    j] should be equal to numpy.inf. * The diagonal of adjacency_matrix should be zero. Output An NxN NumPy array
+    such that result[i,j] is the shortest distance to travel between node i and node j. If no such path exists then
+    result[i,j] == numpy.inf
+    """
+    (mat, n) = check_and_convert_adjacency_matrix(adjacency_matrix)
+
+    for k in range(n):
+        mat = minimum(mat, mat[newaxis, k, :] + mat[:, k, newaxis])
+
+    return mat
+
+
+def test_floyd_warshall_algorithms_on_small_matrix():
+    INPUT = array([
+        [0., inf, -2., inf],
+        [4., 0., 3., inf],
+        [inf, inf, 0., 2.],
+        [inf, -1., inf, 0.]
+    ])
+
+    OUTPUT = array([
+        [0., -1., -2., 0.],
+        [4., 0., 2., 4.],
+        [5., 1., 0., 2.],
+        [3., -1., 1., 0.]])
+
+    assert (floyd_warshall_cormen(INPUT) == OUTPUT).all()
+    assert (floyd_warshall_inplace(INPUT) == OUTPUT).all()
+    assert (floyd_warshall_faster(INPUT) == OUTPUT).all()
+    assert (floyd_warshall_fastest(INPUT) == OUTPUT).all()
+
+
+class Timer(object):
     def __init__(self):
-        self.adj = {}  # Adjacency matrix that holds graph data
-        self.vertexCount = 0
+        self.start_time = time.clock()
 
-    def addVertex(self, vertex):
-        if vertex in self.adj:
-            return "Vertex already exists"
-        if vertex != self.vertexCount:
-            return "Don't skip a vertex"
-        self.adj[vertex] = []
-        self.vertexCount += 1
+    def stop(self):
+        print('%.3f seconds elapsed' % (time.clock() - self.start_time))
 
-    def addEdge(self, start, end, weight):
-        if start not in self.adj:
-            return "Starting vertex not in graph"
-        if end not in self.adj:
-            return "Ending vertex not in graph"
-        if start == end:
-            return "Cannot have same start and end vertex"
-        edge = Edge(start, end, weight)
-        self.adj[start].append(edge)
+    def __enter__(self):
+        return self
 
-    def doesEdgeExist(self, start, end):
-        for vertex in self.adj:
-            for edge in self.adj[vertex]:
-                if edge.start == start and edge.end == end:
-                    return (True, edge)
-        return (False, None)
+    def __exit__(self, type, value, tb):
+        self.stop()
 
-    def floydwarshall(self):
-        M = [[9999999 for x in range(len(self.adj))] for y in range(len(self.adj))]
-        for x in range(len(M)):
-            for y in range(len(M[0])):
-                if x == y:
-                    M[x][y] = 0
-                exists, edge = self.doesEdgeExist(x, y)
-                if exists:
-                    M[x][y] = edge.weight
-        for k in range(len(M)):
-            for i in range(len(M)):
-                for j in range(len(M)):
-                    newDistance = M[i][k] + M[k][j]
-                    if newDistance < M[i][j]:
-                        M[i][j] = newDistance
-        return M
+
+def test_floyd_warshall_compatibility_on_large_matrix():
+    N = 100
+    print('Matrix size:', N)
+    m = randint(1, 100, size=(N, N))
+    for i in range(N):
+        m[i, i] = 0
+
+    print('Slow algorithm (with allocations):', )
+    with Timer():
+        res_coremen = floyd_warshall_cormen(m)
+
+    print('Running naive inplace algorithm:', )
+    with Timer():
+        res_inplace = floyd_warshall_inplace(m)
+
+    print('Running partially vectorized algorithm (2 loops):', )
+    with Timer():
+        res_faster = floyd_warshall_faster(m)
+
+    print('Running highly vectorized algorithm (1 loops):', )
+    with Timer():
+        res_fastest = floyd_warshall_fastest(m)
+
+    assert (res_inplace == res_faster).all()
+    assert (res_faster == res_fastest).all()
+
+test_floyd_warshall_compatibility_on_large_matrix()
