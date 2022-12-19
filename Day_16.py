@@ -103,10 +103,18 @@ def list_valves_that_flow(valves: list[Valve]) -> list[str]:
 
 def calculate_total_flow_for(ordering: Tuple[str, ...], valves: list[Valve], distance_matrix: ndarray):
     current_label = 'AA'
-    timer = 30
+    remaining_minutes = 30
+    flow = 0
     for next_label in ordering:
         current_index = look_up_index(current_label, valves)
         next_index = look_up_index(next_label, valves)
+        distance = distance_matrix[current_index][next_index]
+        remaining_minutes -= distance + 1
+        if remaining_minutes <= 0:
+            break
+        flow += valves[next_index].flow_rate * remaining_minutes
+        current_label = next_label
+    return flow
 
 
 def part_one(filename):
@@ -119,8 +127,19 @@ def part_one(filename):
     print(distance_matrix)
     flow_valves = list_valves_that_flow(valves)
     # result = [x for x in product(flow_valves, repeat=5) if all(x[i - 1] != x[i] for i in range(1, len(x)))]
+    max_flow = -math.inf
+    total_perms = math.factorial(len(flow_valves))
+    counter = 1
+    print(f'Looping through {total_perms} orderings.')
     for ordering in permutations(flow_valves):
-        calculate_total_flow_for(ordering, valves, distance_matrix)
+        flow = calculate_total_flow_for(ordering, valves, distance_matrix)
+        counter += 1
+        if counter % 10000000 == 0:
+            print(f'Percent done: {counter/total_perms}')
+        if flow > max_flow:
+            max_flow = flow
+            print(ordering, flow, max_flow)
+
     return -1
 
 
@@ -132,7 +151,7 @@ def part_two(filename):
 day_of_month = '16'
 long_filename = f'Day_{day_of_month}_long_input.txt'
 short_filename = f'Day_{day_of_month}_short_input.txt'
-print(f'Answer part one: {part_one(short_filename)}')
+print(f'Answer part one: {part_one(long_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
 # class Test(unittest.TestCase):
