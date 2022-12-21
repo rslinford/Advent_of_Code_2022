@@ -1,6 +1,14 @@
 import re
 import unittest
 from dataclasses import dataclass
+from enum import Enum, auto
+
+
+class Mineral(Enum):
+    ORE = 0
+    CLAY = auto()
+    OBSIDIAN = auto()
+    GEODE = auto()
 
 
 @dataclass
@@ -16,16 +24,36 @@ class Cost:
         return self.ore < other.ore and self.clay < other.clay and self.obsidian < other.obsidian
 
 
+@dataclass
+class Blueprint:
+    id: int
+    ore: Cost
+    clay: Cost
+    obsidian: Cost
+    geode: Cost
+
+    def array(self):
+        return [self.ore.array, self.clay.array, self.obsidian.array, self.geode.array]
+
+
 def read_puzzle_input(filename):
     with open(filename, 'r') as f:
         data = f.read().strip().split('\n')
     return data
 
 
+def parse_blueprints(data):
+    return [Blueprint(int(row[0]),
+                      Cost(int(row[1]), 0, 0),
+                      Cost(int(row[2]), 0, 0),
+                      Cost(int(row[3]), int(row[4]), 0),
+                      Cost(int(row[5]), 0, int(row[6])))
+            for row in [re.findall('\d+', line) for line in data]]
+
+
 def part_one(filename):
     data = read_puzzle_input(filename)
-    result = [re.findall('\d+', line) for line in data]
-    print(result)
+    result = parse_blueprints(data)
     return -1
 
 
@@ -37,7 +65,7 @@ def part_two(filename):
 day_of_month = '19'
 long_filename = f'Day_{day_of_month}_long_input.txt'
 short_filename = f'Day_{day_of_month}_short_input.txt'
-print(f'Answer part one: {part_one(long_filename)}')
+print(f'Answer part one: {part_one(short_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
 
@@ -58,3 +86,23 @@ class Test(unittest.TestCase):
         c = Cost(2, 3, 4)
         self.assertEqual(a, c)
         self.assertNotEqual(b, c)
+
+    def test_mineral(self):
+        self.assertEqual(0, Mineral.ORE.value)
+        self.assertEqual(1, Mineral.CLAY.value)
+        self.assertEqual(2, Mineral.OBSIDIAN.value)
+        self.assertEqual(3, Mineral.GEODE.value)
+
+        a = Cost(4, 5, 6)
+        self.assertEqual(4, a.array()[Mineral.ORE.value])
+        self.assertEqual(5, a.array()[Mineral.CLAY.value])
+        self.assertEqual(6, a.array()[Mineral.OBSIDIAN.value])
+
+    def test_parse_blueprint(self):
+        data = read_puzzle_input(short_filename)
+        b = parse_blueprints(data)
+        self.assertEqual(2, len(b))
+        self.assertEqual(1, b[0].id)
+        self.assertEqual(4, b[0].ore.ore)
+        self.assertEqual(0, b[0].ore.clay)
+        self.assertEqual(0, b[0].ore.obsidian)
