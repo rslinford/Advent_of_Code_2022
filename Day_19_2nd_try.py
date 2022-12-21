@@ -25,6 +25,30 @@ class Cost:
 
 
 @dataclass
+class BotInventory:
+    ore: int = 0
+    clay: int = 0
+    obsidian: int = 0
+    geode: int = 0
+
+
+@dataclass
+class ResourceInventory:
+    ore: int = 0
+    clay: int = 0
+    obsidian: int = 0
+    geode: int = 0
+
+    def can_afford(self, cost: Cost):
+        return self.ore >= cost.ore and self.clay >= cost.clay and self.obsidian >= cost.obsidian
+
+    def subtract(self, cost: Cost):
+        self.ore -= cost.ore
+        self.clay -= cost.clay
+        self.obsidian -= cost.obsidian
+
+
+@dataclass
 class Blueprint:
     id: int
     ore: Cost
@@ -44,16 +68,62 @@ def read_puzzle_input(filename):
 
 def parse_blueprints(data):
     return [Blueprint(int(row[0]),
-                      Cost(int(row[1]), 0, 0),
-                      Cost(int(row[2]), 0, 0),
-                      Cost(int(row[3]), int(row[4]), 0),
-                      Cost(int(row[5]), 0, int(row[6])))
+                      Cost(ore=int(row[1])),
+                      Cost(ore=int(row[2])),
+                      Cost(ore=int(row[3]), clay=int(row[4])),
+                      Cost(ore=int(row[5]), obsidian=int(row[6])))
             for row in [re.findall('\d+', line) for line in data]]
+
+
+def quality_level(bp: Blueprint, time_limit):
+    max_geode = 0
+
+    def maximize_geode(remaining_time, bot_inv: BotInventory, res_inv: ResourceInventory, bot_order: Mineral = None):
+        if remaining_time <= 0:
+            return max_geode
+        # todo: caching optimization here?
+        print(bp.id, bot_inv, res_inv, remaining_time)
+        # Harvest minerals
+        res_inv.ore += bot_inv.ore
+        res_inv.clay += bot_inv.clay
+        res_inv.obsidian += bot_inv.obsidian
+        res_inv.geode += bot_inv.geode
+
+        # Handle bot creation order
+        if bot_order:
+            match bot_order:
+                case Mineral.GEODE:
+                    res_inv.subtract(bp.geode)
+                    bot_inv.geode += 1
+                case Mineral.OBSIDIAN:
+                    res_inv.subtract(bp.obsidian)
+                    bot_inv.obsidian += 1
+                case Mineral.CLAY:
+                    res_inv.subtract(bp.clay)
+                    bot_inv.clay += 1
+                case Mineral.ORE:
+                    res_inv.subtract(bp.ore)
+                    bot_inv.ore += 1
+
+        # Geode
+        if res_inv.can_afford(bp.geode):
+            maximize_geode(remaining_time - 1, bot_inv, res_inv, Mineral.GEODE)
+        if res_inv.can_afford(bp.obsidian):
+            maximize_geode(remaining_time - 1, bot_inv, res_inv, Mineral.OBSIDIAN)
+        if res_inv.can_afford(bp.clay) and bot_inv.clay <= bp.obsidian.clay:
+            maximize_geode(remaining_time - 1, bot_inv, res_inv, Mineral.CLAY)
+        if res_inv.can_afford(bp.ore) and bot_inv.ore <= max(bp.ore.ore, bp.clay.ore, bp.obsidian.ore, bp.geode.ore):
+            maximize_geode(remaining_time - 1, bot_inv, res_inv, Mineral.ORE)
+
+        maximize_geode(remaining_time - 1, bot_inv, res_inv, None)
+
+    return bp.id * maximize_geode(time_limit, BotInventory(ore=1), ResourceInventory())
 
 
 def part_one(filename):
     data = read_puzzle_input(filename)
-    result = parse_blueprints(data)
+    blueprints = parse_blueprints(data)
+    result = [quality_level(blueprint, 24) for blueprint in blueprints]
     return -1
 
 
