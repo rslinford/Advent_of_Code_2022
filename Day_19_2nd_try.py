@@ -1,5 +1,19 @@
 import re
 import unittest
+from dataclasses import dataclass
+
+
+@dataclass
+class Cost:
+    ore: int = 0
+    clay: int = 0
+    obsidian: int = 0
+
+    def array(self):
+        return [self.ore, self.clay, self.obsidian]
+
+    def __lt__(self, other):
+        return self.ore < other.ore and self.clay < other.clay and self.obsidian < other.obsidian
 
 
 def read_puzzle_input(filename):
@@ -35,3 +49,12 @@ class Test(unittest.TestCase):
     def test_part_two(self):
         self.assertEqual(-1, part_two(short_filename))
         self.assertEqual(-1, part_two(long_filename))
+
+    def test_cost(self):
+        a = Cost(2, 3, 4)
+        b = Cost(1, 2, 3)
+        self.assertGreater(a, b)
+        self.assertLess(b, a)
+        c = Cost(2, 3, 4)
+        self.assertEqual(a, c)
+        self.assertNotEqual(b, c)

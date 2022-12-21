@@ -9,6 +9,7 @@ def read_puzzle_input(filename):
         data = f.read().strip().split('\n')
     return data
 
+
 class Resource(Enum):
     ORE = auto()
     CLAY = auto()
@@ -62,26 +63,29 @@ def collect_ore(inventory):
     inventory.geode += inventory.geode_robot
 
 
-def spend_resources(blueprint, inventory):
-    if blueprint.geode_robot_ore_cost <= inventory.ore and blueprint.geode_robot_obsidian_cost <= inventory.obsidian:
-        inventory.geode_robot_on_order = 1
-        inventory.ore -= blueprint.geode_robot_ore_cost
-        inventory.obsidian -= blueprint.geode_robot_obsidian_cost
-        return
-    if blueprint.obsidian_robot_ore_cost <= inventory.ore and blueprint.obsidian_robot_clay_cost <= inventory.clay:
-        inventory.obsidian_robot_on_order = 1
-        inventory.ore -= blueprint.obsidian_robot_ore_cost
-        inventory.clay -= blueprint.obsidian_robot_clay_cost
-        return
-    if blueprint.clay_robot_ore_cost <= inventory.ore:
-        inventory.clay_robot_on_order = 1
-        inventory.ore -= blueprint.clay_robot_ore_cost
-        return
-    if blueprint.ore_robot_ore_cost <= inventory.ore:
-        inventory.ore_robot_on_order = 1
-        inventory.ore -= blueprint.ore_robot_ore_cost
+def spend_resources(bp: Blueprint, inv: Inventory):
+    if bp.geode_robot_ore_cost <= inv.ore and bp.geode_robot_obsidian_cost <= inv.obsidian:
+        inv.geode_robot_on_order = 1
+        inv.ore -= bp.geode_robot_ore_cost
+        inv.obsidian -= bp.geode_robot_obsidian_cost
         return
 
+    if bp.obsidian_robot_ore_cost <= inv.ore and bp.obsidian_robot_clay_cost <= inv.clay:
+        inv.obsidian_robot_on_order = 1
+        inv.ore -= bp.obsidian_robot_ore_cost
+        inv.clay -= bp.obsidian_robot_clay_cost
+        return
+
+    if bp.ore_robot_ore_cost <= inv.ore and inv.ore_robot < max(bp.ore_robot_ore_cost, bp.clay_robot_ore_cost,
+                                                                bp.obsidian_robot_ore_cost, bp.geode_robot_ore_cost):
+        inv.ore_robot_on_order = 1
+        inv.ore -= bp.ore_robot_ore_cost
+        return
+
+    if bp.clay_robot_ore_cost <= inv.ore and inv.clay_robot < bp.obsidian_robot_clay_cost:
+        inv.clay_robot_on_order = 1
+        inv.ore -= bp.clay_robot_ore_cost
+        return
 
 def deploy_new_robots(inventory):
     inventory.ore_robot += inventory.ore_robot_on_order
@@ -126,7 +130,6 @@ long_filename = f'Day_{day_of_month}_long_input.txt'
 short_filename = f'Day_{day_of_month}_short_input.txt'
 print(f'Answer part one: {part_one(short_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
-
 
 # class Test(unittest.TestCase):
 #     def test_part_one(self):
