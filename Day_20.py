@@ -8,19 +8,6 @@ def read_puzzle_input(filename):
     return data
 
 
-def parse_puzzle_input(data):
-    previous = None
-    first = None
-    for line in data:
-        n = NumberCircle(int(line))
-        if not first:
-            first = n
-        else:
-            previous.insert_after(n)
-        previous = n
-    return first
-
-
 @dataclass
 class NumberCircle:
     id_counter = 0
@@ -52,11 +39,67 @@ class NumberCircle:
         other.next = old_self_next
         old_self_next.prev = other
 
+    def remove(self):
+        """Remove self from circle"""
+        self.next.prev = self.prev
+        self.prev.next = self.next
+        self.next = self
+        self.prev = self
+
+    def move(self):
+        if self.number == 0:
+            return
+        n = self.number
+        negative = n < 0
+        if negative:
+            n = -n
+            current = self.prev
+        else:
+            n -= 1
+            current = self.next
+        for _ in range(n):
+            if negative:
+                current = current.prev
+            else:
+                current = current.next
+        self.remove()
+        current.insert_after(self)
+
+    def snapshot(self):
+        """Takes a snapshot, a list, of the entire circle with self as the first element."""
+        rval = [self]
+        current = self.next
+        while current != self:
+            rval.append(current)
+            current = current.next
+
+        return rval
+
+def parse_puzzle_input(data) -> NumberCircle:
+    previous = None
+    first = None
+    for line in data:
+        n = NumberCircle(int(line))
+        if not first:
+            first = n
+        else:
+            previous.insert_after(n)
+        previous = n
+    return first
 
 def part_one(filename):
     data = read_puzzle_input(filename)
     circle = parse_puzzle_input(data)
-    print(circle.repr_full_circle())
+    initial_snapshot = circle.snapshot()
+    print('Initial arrangement:')
+    print(initial_snapshot)
+    print()
+    for i, x in enumerate(initial_snapshot):
+        x.move()
+        print(f'{i+1}) moving the {x.number}:')
+        print(circle.snapshot())
+        print()
+
     return -1
 
 
@@ -72,14 +115,14 @@ print(f'Answer part one: {part_one(short_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
 
-class Test(unittest.TestCase):
-    def test_part_one(self):
-        self.assertEqual(-1, part_one(short_filename))
-        self.assertEqual(-1, part_one(long_filename))
-
-    def test_part_two(self):
-        self.assertEqual(-1, part_two(short_filename))
-        self.assertEqual(-1, part_two(long_filename))
+# class Test(unittest.TestCase):
+#     def test_part_one(self):
+#         self.assertEqual(-1, part_one(short_filename))
+#         self.assertEqual(-1, part_one(long_filename))
+#
+#     def test_part_two(self):
+#         self.assertEqual(-1, part_two(short_filename))
+#         self.assertEqual(-1, part_two(long_filename))
 
 
 class TestNumberCircle(unittest.TestCase):
