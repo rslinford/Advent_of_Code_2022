@@ -61,7 +61,6 @@ def part_one(filename):
             monkey.solve(monkeys[operand1].job, operator, monkeys[operand2].job)
             if monkey.id == 'root':
                 return int(monkey.job)
-    # raise ValueError('root not found')
 
 
 def part_two(filename):
@@ -72,14 +71,14 @@ def part_two(filename):
 day_of_month = '21'
 long_filename = f'Day_{day_of_month}_long_input.txt'
 short_filename = f'Day_{day_of_month}_short_input.txt'
-print(f'Answer part one: {part_one(short_filename)}')
+print(f'Answer part one: {part_one(long_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
 
 class Test(unittest.TestCase):
     def test_part_one(self):
         self.assertEqual(152, part_one(short_filename))
-        self.assertEqual(-1, part_one(long_filename))
+        self.assertEqual(56490240862410, part_one(long_filename))
 
     def test_part_two(self):
         self.assertEqual(-1, part_two(short_filename))
