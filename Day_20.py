@@ -92,14 +92,14 @@ def parse_puzzle_input(data) -> NumberCircle:
 
 def mix(circle: NumberCircle):
     initial_snapshot = circle.snapshot()
-    print('Initial arrangement:')
-    print(initial_snapshot)
-    print()
+    # print('Initial arrangement:')
+    # print(initial_snapshot)
+    # print()
     for i, x in enumerate(initial_snapshot):
         x.move()
-        print(f'{i + 1}) moving the {x.number}:')
-        print(circle.snapshot())
-        print()
+        # print(f'{i + 1}) moving the {x.number}:')
+        # print(circle.snapshot())
+        # print()
 
 
 def read_grove_coordinates(circle):
@@ -119,16 +119,14 @@ def read_grove_coordinates(circle):
     for _ in range(1000):
         current = current.next
         c = current.number
-    print(a, b, c, a + b + c)
+    return a + b + c
 
 
 def part_one(filename):
     data = read_puzzle_input(filename)
     circle = parse_puzzle_input(data)
     mix(circle)
-    read_grove_coordinates(circle)
-
-    return -1
+    return read_grove_coordinates(circle)
 
 
 def part_two(filename):
@@ -139,18 +137,19 @@ def part_two(filename):
 day_of_month = '20'
 long_filename = f'Day_{day_of_month}_long_input.txt'
 short_filename = f'Day_{day_of_month}_short_input.txt'
-print(f'Answer part one: {part_one(short_filename)}')
+print(f'Answer part one: {part_one(long_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
 
-# class Test(unittest.TestCase):
-#     def test_part_one(self):
-#         self.assertEqual(-1, part_one(short_filename))
-#         self.assertEqual(-1, part_one(long_filename))
-#
-#     def test_part_two(self):
-#         self.assertEqual(-1, part_two(short_filename))
-#         self.assertEqual(-1, part_two(long_filename))
+class Test(unittest.TestCase):
+    def test_part_one(self):
+        # 9459 is not the right answer
+        self.assertEqual(3, part_one(short_filename))
+        self.assertEqual(-1, part_one(long_filename))
+
+    def test_part_two(self):
+        self.assertEqual(-1, part_two(short_filename))
+        self.assertEqual(-1, part_two(long_filename))
 
 
 class TestNumberCircle(unittest.TestCase):
