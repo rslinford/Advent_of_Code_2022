@@ -25,12 +25,11 @@ class NumberCircle:
         return str(self.number)
 
     def insert_after(self, other):
-        other_next = other.next
-        other_prev = other.prev
-        other.prev = self.prev
-        other.next = self.next
-        self.next = other_next
-        self.prev = other_prev
+        old_self_next = self.next
+        self.next = other
+        other.prev = self
+        other.next = old_self_next
+        old_self_next.prev = other
 
 
 def part_two(filename):
@@ -57,8 +56,14 @@ class Test(unittest.TestCase):
 
 class TestNumberCircle(unittest.TestCase):
     def test_insert_after(self):
-        a = NumberCircle(5)
-        b = NumberCircle(6)
-        a.insert_after(b)
-        print(a)
-        print(b)
+        a1 = NumberCircle(1)
+        a2 = NumberCircle(2)
+        a1.insert_after(a2)
+        self.assertEqual(2, a1.next.number)
+        self.assertEqual(2, a1.prev.number)
+        self.assertEqual(1, a2.next.number)
+        self.assertEqual(1, a2.prev.number)
+        a3 = NumberCircle(3)
+        a1.insert_after(a3)
+        self.assertEqual(1, a3.prev.number)
+        self.assertEqual(2, a3.next.number)
