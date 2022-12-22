@@ -1,4 +1,3 @@
-import re
 import unittest
 from dataclasses import dataclass
 
@@ -9,14 +8,25 @@ def read_puzzle_input(filename):
     return data
 
 
-def part_one(filename):
-    data = read_puzzle_input(filename)
-    return -1
+def parse_puzzle_input(data):
+    previous = None
+    first = None
+    for line in data:
+        n = NumberCircle(int(line))
+        if not first:
+            first = n
+        else:
+            previous.insert_after(n)
+        previous = n
+    return first
 
 
 @dataclass
 class NumberCircle:
+    id_counter = 0
     def __init__(self, number):
+        self.id = NumberCircle.id_counter
+        NumberCircle.id_counter += 1
         self.next = self
         self.prev = self
         self.number = number
@@ -24,12 +34,30 @@ class NumberCircle:
     def __repr__(self):
         return str(self.number)
 
+    def __eq__(self, other):
+        return self.id == other.id
+
+    def repr_full_circle(self):
+        rval = [f'{self.number}\n']
+        current = self.next
+        while current != self:
+            rval.append(f'{current.number}\n')
+            current = current.next
+        return ''.join(rval)
+
     def insert_after(self, other):
         old_self_next = self.next
         self.next = other
         other.prev = self
         other.next = old_self_next
         old_self_next.prev = other
+
+
+def part_one(filename):
+    data = read_puzzle_input(filename)
+    circle = parse_puzzle_input(data)
+    print(circle.repr_full_circle())
+    return -1
 
 
 def part_two(filename):
@@ -67,3 +95,12 @@ class TestNumberCircle(unittest.TestCase):
         a1.insert_after(a3)
         self.assertEqual(1, a3.prev.number)
         self.assertEqual(2, a3.next.number)
+
+    def test_parse_puzzle_input(self):
+        data = read_puzzle_input(short_filename)
+        circle = parse_puzzle_input(data)
+        self.assertEqual(1, circle.number)
+        self.assertEqual(2, circle.next.number)
+        self.assertEqual(4, circle.prev.number)
+        self.assertEqual(1, circle.prev.next.number)
+        self.assertEqual(1, circle.next.prev.number)
