@@ -48,7 +48,7 @@ def parse_puzzle_input(data):
     rval = []
     for line in data:
         result = re.search(
-            'Blueprint (\d+): Each ore robot costs (\d+) ore. Each clay robot costs (\d+) ore. Each obsidian robot costs (\d+) ore and (\d+) clay. Each geode robot costs (\d+) ore and (\d+) obsidian.',
+            'Blueprint (\d+): Each ore_bot_cost robot costs (\d+) ore_bot_cost. Each clay_bot_cost robot costs (\d+) ore_bot_cost. Each obsidian_bot_cost robot costs (\d+) ore_bot_cost and (\d+) clay_bot_cost. Each geode_bot_cost robot costs (\d+) ore_bot_cost and (\d+) obsidian_bot_cost.',
             line)
         blueprint = Blueprint(int(result.group(1)), int(result.group(2)), int(result.group(3)), int(result.group(4)),
                               int(result.group(5)), int(result.group(6)), int(result.group(7)))
@@ -57,10 +57,10 @@ def parse_puzzle_input(data):
 
 
 def collect_ore(inventory):
-    inventory.ore += inventory.ore_robot
-    inventory.clay += inventory.clay_robot
-    inventory.obsidian += inventory.obsidian_robot
-    inventory.geode += inventory.geode_robot
+    inventory.ore_bot_cost += inventory.ore_robot
+    inventory.clay_bot_cost += inventory.clay_robot
+    inventory.obsidian_bot_cost += inventory.obsidian_robot
+    inventory.geode_bot_cost += inventory.geode_robot
 
 
 def spend_resources(bp: Blueprint, inv: Inventory):

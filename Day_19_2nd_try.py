@@ -2,7 +2,7 @@ import re
 import unittest
 from dataclasses import dataclass
 from enum import Enum, auto
-
+from copy import copy
 
 class Mineral(Enum):
     ORE = 0
@@ -21,7 +21,7 @@ class Cost:
         return [self.ore, self.clay, self.obsidian]
 
     def __lt__(self, other):
-        return self.ore < other.ore and self.clay < other.clay and self.obsidian < other.obsidian
+        return self.ore < other.ore_bot_cost and self.clay < other.clay_bot_cost and self.obsidian < other.obsidian_bot_cost
 
 
 @dataclass
@@ -51,13 +51,13 @@ class ResourceInventory:
 @dataclass
 class Blueprint:
     id: int
-    ore: Cost
-    clay: Cost
-    obsidian: Cost
-    geode: Cost
+    ore_bot_cost: Cost
+    clay_bot_cost: Cost
+    obsidian_bot_cost: Cost
+    geode_bot_cost: Cost
 
     def array(self):
-        return [self.ore.array, self.clay.array, self.obsidian.array, self.geode.array]
+        return [self.ore_bot_cost.array, self.clay_bot_cost.array, self.obsidian_bot_cost.array, self.geode_bot_cost.array]
 
 
 def read_puzzle_input(filename):
@@ -75,14 +75,17 @@ def parse_blueprints(data):
             for row in [re.findall('\d+', line) for line in data]]
 
 
+max_geode = 0
 def quality_level(bp: Blueprint, time_limit):
-    max_geode = 0
-
-    def maximize_geode(remaining_time, bot_inv: BotInventory, res_inv: ResourceInventory, bot_order: Mineral = None):
+    global max_geode
+    def maximize_geode(remaining_time, bot_inv: BotInventory, res_inv: ResourceInventory, bot_order: Mineral = None) -> int:
+        global max_geode
+        print(bp.id, bot_inv, res_inv, remaining_time, max_geode)
         if remaining_time <= 0:
+            if res_inv.geode > max_geode:
+                max_geode = res_inv.geode
             return max_geode
         # todo: caching optimization here?
-        print(bp.id, bot_inv, res_inv, remaining_time)
         # Harvest minerals
         res_inv.ore += bot_inv.ore
         res_inv.clay += bot_inv.clay
@@ -93,29 +96,36 @@ def quality_level(bp: Blueprint, time_limit):
         if bot_order:
             match bot_order:
                 case Mineral.GEODE:
-                    res_inv.subtract(bp.geode)
+                    res_inv.subtract(bp.geode_bot_cost)
                     bot_inv.geode += 1
                 case Mineral.OBSIDIAN:
-                    res_inv.subtract(bp.obsidian)
+                    res_inv.subtract(bp.obsidian_bot_cost)
                     bot_inv.obsidian += 1
                 case Mineral.CLAY:
-                    res_inv.subtract(bp.clay)
+                    res_inv.subtract(bp.clay_bot_cost)
                     bot_inv.clay += 1
                 case Mineral.ORE:
-                    res_inv.subtract(bp.ore)
+                    res_inv.subtract(bp.ore_bot_cost)
                     bot_inv.ore += 1
 
         # Geode
-        if res_inv.can_afford(bp.geode):
-            maximize_geode(remaining_time - 1, bot_inv, res_inv, Mineral.GEODE)
-        if res_inv.can_afford(bp.obsidian):
-            maximize_geode(remaining_time - 1, bot_inv, res_inv, Mineral.OBSIDIAN)
-        if res_inv.can_afford(bp.clay) and bot_inv.clay <= bp.obsidian.clay:
-            maximize_geode(remaining_time - 1, bot_inv, res_inv, Mineral.CLAY)
-        if res_inv.can_afford(bp.ore) and bot_inv.ore <= max(bp.ore.ore, bp.clay.ore, bp.obsidian.ore, bp.geode.ore):
-            maximize_geode(remaining_time - 1, bot_inv, res_inv, Mineral.ORE)
+        if res_inv.can_afford(bp.geode_bot_cost):
+            maximize_geode(remaining_time - 1, copy(bot_inv), copy(res_inv), Mineral.GEODE)
 
-        maximize_geode(remaining_time - 1, bot_inv, res_inv, None)
+        if res_inv.can_afford(bp.obsidian_bot_cost) and bot_inv.obsidian <= bp.geode_bot_cost.obsidian:
+            maximize_geode(remaining_time - 1, copy(bot_inv), copy(res_inv), Mineral.OBSIDIAN)
+
+        if res_inv.can_afford(bp.clay_bot_cost) and \
+                bot_inv.clay <= bp.obsidian_bot_cost.clay and \
+                res_inv.clay < bp.obsidian_bot_cost.clay:
+            maximize_geode(remaining_time - 1, copy(bot_inv), copy(res_inv), Mineral.CLAY)
+
+        if res_inv.can_afford(bp.ore_bot_cost) and bot_inv.ore <= max(bp.ore_bot_cost.ore, bp.clay_bot_cost.ore, bp.obsidian_bot_cost.ore, bp.geode_bot_cost.ore):
+            maximize_geode(remaining_time - 1, copy(bot_inv), copy(res_inv), Mineral.ORE)
+
+        maximize_geode(remaining_time - 1, copy(bot_inv), copy(res_inv), None)
+
+        return max_geode
 
     return bp.id * maximize_geode(time_limit, BotInventory(ore=1), ResourceInventory())
 
@@ -173,6 +183,6 @@ class Test(unittest.TestCase):
         b = parse_blueprints(data)
         self.assertEqual(2, len(b))
         self.assertEqual(1, b[0].id)
-        self.assertEqual(4, b[0].ore.ore)
-        self.assertEqual(0, b[0].ore.clay)
-        self.assertEqual(0, b[0].ore.obsidian)
+        self.assertEqual(4, b[0].ore_bot_cost.ore)
+        self.assertEqual(0, b[0].ore_bot_cost.clay)
+        self.assertEqual(0, b[0].ore_bot_cost.obsidian)
