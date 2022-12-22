@@ -11,6 +11,7 @@ def read_puzzle_input(filename):
 @dataclass
 class NumberCircle:
     id_counter = 0
+
     def __init__(self, number):
         self.id = NumberCircle.id_counter
         NumberCircle.id_counter += 1
@@ -75,6 +76,7 @@ class NumberCircle:
 
         return rval
 
+
 def parse_puzzle_input(data) -> NumberCircle:
     previous = None
     first = None
@@ -87,18 +89,44 @@ def parse_puzzle_input(data) -> NumberCircle:
         previous = n
     return first
 
-def part_one(filename):
-    data = read_puzzle_input(filename)
-    circle = parse_puzzle_input(data)
+
+def mix(circle: NumberCircle):
     initial_snapshot = circle.snapshot()
     print('Initial arrangement:')
     print(initial_snapshot)
     print()
     for i, x in enumerate(initial_snapshot):
         x.move()
-        print(f'{i+1}) moving the {x.number}:')
+        print(f'{i + 1}) moving the {x.number}:')
         print(circle.snapshot())
         print()
+
+
+def read_grove_coordinates(circle):
+    zero = None
+    for x in circle.snapshot():
+        if x.number == 0:
+            zero = x
+            break
+    current = zero
+    a, b, c = 0, 0, 0
+    for _ in range(1000):
+        current = current.next
+        a = current.number
+    for _ in range(1000):
+        current = current.next
+        b = current.number
+    for _ in range(1000):
+        current = current.next
+        c = current.number
+    print(a, b, c, a + b + c)
+
+
+def part_one(filename):
+    data = read_puzzle_input(filename)
+    circle = parse_puzzle_input(data)
+    mix(circle)
+    read_grove_coordinates(circle)
 
     return -1
 
