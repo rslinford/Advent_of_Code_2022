@@ -47,6 +47,9 @@ class Monkey:
             case '/':
                 self.job = str(op1 // op2)
 
+    def set_job(self, job):
+        self.job = job
+
 
 def part_one(filename):
     data = read_puzzle_input(filename)
@@ -63,9 +66,39 @@ def part_one(filename):
                 return int(monkey.job)
 
 
+# def counting_numbers():
+#     i = 1
+#     while True:
+#         yield i
+#         i += 1
+
 def part_two(filename):
     data = read_puzzle_input(filename)
-    return -1
+    monkeys = parse_puzzle_input(data)
+    # cn = counting_numbers()
+    test_value = 1
+    while True:
+        for monkey in monkeys.values():
+            if monkey.id == 'humn':
+                # test_value = str(next(cn))
+                monkey.set_job(str(test_value))
+            if monkey.is_yelling():
+                continue
+            operand1, operator, operand2 = monkey.parse_job()
+            if monkey.id == 'root':
+                if monkeys[operand1].is_yelling() and monkeys[operand2].is_yelling():
+                    if monkeys[operand1].job == monkeys[operand2].job:
+                        return test_value
+                    else:
+                        test_value += 1
+                        if test_value == 301:
+                            print("here")
+                        monkeys = parse_puzzle_input(data)
+                        break
+            if not monkeys[operand1].is_yelling() or not monkeys[operand2].is_yelling():
+                continue
+            monkey.solve(monkeys[operand1].job, operator, monkeys[operand2].job)
+
 
 
 day_of_month = '21'
@@ -80,6 +113,6 @@ class Test(unittest.TestCase):
         self.assertEqual(152, part_one(short_filename))
         self.assertEqual(56490240862410, part_one(long_filename))
 
-    def test_part_two(self):
-        self.assertEqual(-1, part_two(short_filename))
-        self.assertEqual(-1, part_two(long_filename))
+    # def test_part_two(self):
+    #     self.assertEqual(-1, part_two(short_filename))
+    #     self.assertEqual(-1, part_two(long_filename))
