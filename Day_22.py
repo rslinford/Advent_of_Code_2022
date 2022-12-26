@@ -260,5 +260,24 @@ class TestPlayer(unittest.TestCase):
         self.assertEqual((8, 0), player.x_and_y())
         player.move_one_step(board)
         self.assertEqual((8, 0), player.x_and_y())
-
+        player.heading = Heading.EAST
+        player.move_one_step(board)
+        player.move_one_step(board)
+        self.assertEqual((10, 0), player.x_and_y())
+        player.heading = Heading.NORTH
+        player.move_one_step(board)
+        self.assertEqual((10, 11), player.x_and_y())
+        player.heading = Heading.EAST
+        player.move_one_step(board)
+        self.assertEqual((11, 11), player.x_and_y())
+        player.heading = Heading.SOUTH
+        player.move_one_step(board)
+        self.assertEqual((11, 11), player.x_and_y())
         print(board)
+
+class test_heading(unittest.TestCase):
+    def test(self):
+        self.assertEqual(0, Heading.EAST.value)
+        self.assertEqual(1, Heading.SOUTH.value)
+        self.assertEqual(2, Heading.WEST.value)
+        self.assertEqual(3, Heading.NORTH.value)
