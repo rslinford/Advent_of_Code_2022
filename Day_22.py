@@ -110,6 +110,13 @@ class Player:
     def x_and_y(self):
         return self.x, self.y
 
+    def col_and_row(self):
+        return self.x + 1, self.y + 1
+
+    def calculate_password(self):
+        col, row = self.col_and_row()
+        return 1000 * row + 4 * col + int(self.heading.value)
+
     def move_one_step(self, board: Board):
         x, y = self.x_and_y()
         match self.heading:
@@ -205,10 +212,8 @@ def part_one(filename):
     player = Player(x, y, Heading.EAST)
     board = Board()
     board.initialize(matrix)
-    print(board)
     player.follow_directions(board, directions)
-
-    return -1
+    return player.calculate_password()
 
 
 def part_two(filename):
@@ -222,11 +227,11 @@ short_filename = f'Day_{day_of_month}_short_input.txt'
 # print(f'Answer part one: {part_one(short_filename)}')
 # print(f'Answer part two: {part_two(short_filename)}')
 
-
-# class Test(unittest.TestCase):
-#     def test_part_one(self):
-#         self.assertEqual(-1, part_one(short_filename))
-#         self.assertEqual(-1, part_one(long_filename))
+# 11274 is too low
+class Test(unittest.TestCase):
+    def test_part_one(self):
+        self.assertEqual(6032, part_one(short_filename))
+        self.assertEqual(-1, part_one(long_filename))
 #
 #     def test_part_two(self):
 #         self.assertEqual(-1, part_two(short_filename))
@@ -273,7 +278,20 @@ class TestPlayer(unittest.TestCase):
         player.heading = Heading.SOUTH
         player.move_one_step(board)
         self.assertEqual((11, 11), player.x_and_y())
-        print(board)
+
+    def test_follow_directions(self):
+        data = read_puzzle_input(short_filename)
+        matrix, directions = parse_puzzle_input(data)
+        x, y = find_starting_position(matrix)
+        player = Player(x, y, Heading.EAST)
+        board = Board()
+        board.initialize(matrix)
+        player.follow_directions(board, directions)
+        col, row = player.col_and_row()
+        self.assertEqual(8, col)
+        self.assertEqual(6, row)
+        self.assertEqual(0, player.heading.value)
+        self.assertEqual(6032, player.calculate_password())
 
 class test_heading(unittest.TestCase):
     def test(self):
