@@ -1,5 +1,4 @@
 import math
-import re
 import unittest
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -11,17 +10,39 @@ def read_puzzle_input(filename):
     return data
 
 
-@dataclass
-class Elf:
-    x: int
-    y: int
-
-
 class Dir(Enum):
+    NONE = auto()
     NORTH = auto()
     SOUTH = auto()
     WEST = auto()
     EAST = auto()
+
+
+@dataclass
+class Elf:
+    x: int
+    y: int
+    proposal = None
+
+    def propose(self, direction: Dir):
+        match direction:
+            case Dir.NORTH:
+                self.proposal = (self.x, self.y - 1)
+            case Dir.SOUTH:
+                self.proposal = (self.x, self.y + 1)
+            case Dir.WEST:
+                self.proposal = (self.x - 1, self.y)
+            case Dir.EAST:
+                self.proposal = (self.x + 1, self.y)
+            case Dir.NONE:
+                self.proposal = None
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def move(self):
+        self.x = self.proposal[0]
+        self.y = self.proposal[1]
 
 
 class Board:
@@ -33,7 +54,7 @@ class Board:
         rval = []
         min_x, max_x, min_y, max_y = self.survey_board_size()
         for y in range(min_y, max_y + 1):
-            if y > 0:
+            if y > min_y:
                 rval.append('\n')
             for x in range(min_x, max_x + 1):
                 if self.tile_has_an_elf(x, y):
@@ -67,10 +88,35 @@ class Board:
     def spread_out(self):
         # Each elf considers whether it needs to move
         #   if no: propose nothing
-        #   if yes: consider moving a directions according to current search order
+        #   if yes: consider moving a direction according to current search order
+        #
+        # Proposal Stage
         for elf in self.elves:
+            elf.propose(Dir.NONE)
+            # Do not make a proposal if no neighbor found
             if not self.elf_has_neighbor(elf):
                 continue
+            # Look ahead for the first way that's clear
+            for direction in self.search_order:
+                if self.clear_ahead(elf, direction):
+                    # The way is clear. Propose direction.
+                    elf.propose(direction)
+                    break
+        # Move Stage
+        for elf1 in self.elves:
+            conflict_found = False
+            for elf2 in self.elves:
+                # Elf doesn't conflict with itself
+                if elf1 == elf2:
+                    continue
+                # Two elves conflict if they proposed the same destination
+                if elf1.proposal == elf2.proposal:
+                    conflict_found = True
+                    break
+            if conflict_found:
+                continue
+            # No conflict. Perform move.
+            elf1.move()
 
     def elf_has_neighbor(self, elf):
         # North
@@ -100,6 +146,30 @@ class Board:
 
         return False
 
+    def clear_ahead(self, elf, direction):
+        match direction:
+            case Dir.NORTH:
+                if self.tile_has_an_elf(elf.x - 1, elf.y - 1) or \
+                        self.tile_has_an_elf(elf.x, elf.y - 1) or \
+                        self.tile_has_an_elf(elf.x + 1, elf.y - 1):
+                    return False
+            case Dir.SOUTH:
+                if self.tile_has_an_elf(elf.x - 1, elf.y + 1) or \
+                        self.tile_has_an_elf(elf.x, elf.y + 1) or \
+                        self.tile_has_an_elf(elf.x + 1, elf.y + 1):
+                    return False
+            case Dir.WEST:
+                if self.tile_has_an_elf(elf.x - 1, elf.y - 1) or \
+                        self.tile_has_an_elf(elf.x - 1, elf.y) or \
+                        self.tile_has_an_elf(elf.x - 1, elf.y + 1):
+                    return False
+            case Dir.EAST:
+                if self.tile_has_an_elf(elf.x + 1, elf.y - 1) or \
+                        self.tile_has_an_elf(elf.x + 1, elf.y) or \
+                        self.tile_has_an_elf(elf.x + 1, elf.y + 1):
+                    return False
+        return True
+
 
 def parse_puzzle_input(data: list[str]):
     rval = []
@@ -114,7 +184,13 @@ def part_one(filename):
     data = read_puzzle_input(filename)
     elves = parse_puzzle_input(data)
     board = Board(elves)
-    board.spread_out()
+    print('Initial State')
+    print(board)
+    for round in range(1, 11):
+        board.spread_out()
+        board.rotate_search_order()
+        print(f'End Round {round}')
+        print(board)
 
     return -1
 
@@ -127,18 +203,19 @@ def part_two(filename):
 day_of_month = '23'
 long_filename = f'Day_{day_of_month}_long_input.txt'
 short_filename = f'Day_{day_of_month}_short_input.txt'
-print(f'Answer part one: {part_one(short_filename)}')
+short_filename_two = f'Day_{day_of_month}_short_input_two.txt'
+print(f'Answer part one: {part_one(short_filename_two)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
 
-class Test(unittest.TestCase):
-    def test_part_one(self):
-        self.assertEqual(-1, part_one(short_filename))
-        self.assertEqual(-1, part_one(long_filename))
-
-    def test_part_two(self):
-        self.assertEqual(-1, part_two(short_filename))
-        self.assertEqual(-1, part_two(long_filename))
+# class Test(unittest.TestCase):
+#     def test_part_one(self):
+#         self.assertEqual(-1, part_one(short_filename))
+#         self.assertEqual(-1, part_one(long_filename))
+#
+#     def test_part_two(self):
+#         self.assertEqual(-1, part_two(short_filename))
+#         self.assertEqual(-1, part_two(long_filename))
 
 
 class TestBoard(unittest.TestCase):
@@ -158,4 +235,3 @@ class TestBoard(unittest.TestCase):
         self.assertTrue(board.elf_has_neighbor(Elf(11, 12)))
         self.assertTrue(board.elf_has_neighbor(Elf(10, 12)))
         self.assertTrue(board.elf_has_neighbor(Elf(10, 11)))
-
