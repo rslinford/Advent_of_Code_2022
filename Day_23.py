@@ -170,6 +170,15 @@ class Board:
                     return False
         return True
 
+    def count_empty_tiles(self):
+        min_x, max_x, min_y, max_y = self.survey_board_size()
+        tally = 0
+        for y in range(min_y, max_y + 1):
+            for x in range(min_x, max_x + 1):
+                if not self.tile_has_an_elf(x, y):
+                    tally += 1
+        return tally
+
 
 def parse_puzzle_input(data: list[str]):
     rval = []
@@ -191,8 +200,7 @@ def part_one(filename):
         board.rotate_search_order()
         print(f'End Round {round}')
         print(board)
-
-    return -1
+    return board.count_empty_tiles()
 
 
 def part_two(filename):
@@ -208,14 +216,14 @@ print(f'Answer part one: {part_one(short_filename_two)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
 
-# class Test(unittest.TestCase):
-#     def test_part_one(self):
-#         self.assertEqual(-1, part_one(short_filename))
-#         self.assertEqual(-1, part_one(long_filename))
-#
-#     def test_part_two(self):
-#         self.assertEqual(-1, part_two(short_filename))
-#         self.assertEqual(-1, part_two(long_filename))
+class Test(unittest.TestCase):
+    def test_part_one(self):
+        self.assertEqual(110, part_one(short_filename_two))
+        self.assertEqual(-1, part_one(long_filename))
+
+    def test_part_two(self):
+        self.assertEqual(-1, part_two(short_filename))
+        self.assertEqual(-1, part_two(long_filename))
 
 
 class TestBoard(unittest.TestCase):
