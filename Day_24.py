@@ -41,19 +41,31 @@ class Blizzard:
                 if self.x >= height - 1:
                     self.x = 1
 
+@dataclass
+class Expedition:
+    x:int
+    y:int
 
 class Board:
     def __init__(self, blizzards: list[Blizzard], height, width):
         self.blizzards = blizzards
         self.height = height
         self.width = width
+        self.expedition = Expedition(1, 0)
+        self.goal = (self.width - 2, self.height - 1)
 
     def __repr__(self):
         rval = []
-        rval.append('#.' + ('#' * (self.width - 2)) + '\n')
+        if self.expedition.x == 1 and self.expedition.y == 0:
+            rval.append('#E' + ('#' * (self.width - 2)) + '\n')
+        else:
+            rval.append('#.' + ('#' * (self.width - 2)) + '\n')
         for y in range(1, self.height - 1):
             rval.append('#')
             for x in range(1, self.width - 1):
+                if self.expedition.x == x and self.expedition.y == y:
+                    rval.append('E')
+                    continue
                 local_blizzards = self.blizzards_at(x, y)
                 if len(local_blizzards) == 0:
                     rval.append('.')
@@ -72,7 +84,10 @@ class Board:
                         case Direction.EAST:
                             rval.append('>')
             rval.append('#\n')
-        rval.append('#' * (self.width - 2) + '.#')
+        if self.goal ==  (self.expedition.x, self.expedition.y):
+            rval.append('#' * (self.width - 2) + 'E#')
+        else:
+            rval.append('#' * (self.width - 2) + '.#')
 
         return ''.join(rval)
 
