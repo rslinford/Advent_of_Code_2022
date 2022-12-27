@@ -22,6 +22,25 @@ class Blizzard:
     y: int
     direction: Direction
 
+    def move(self, width, height):
+        match self.direction:
+            case Direction.NORTH:
+                self.y -= 1
+                if self.y == 0:
+                    self.y = height - 1
+            case Direction.SOUTH:
+                self.y += 1
+                if self.y >= height - 1:
+                    self.y = 1
+            case Direction.WEST:
+                self.x -= 1
+                if self.x == 0:
+                    self.x = width - 1
+            case Direction.EAST:
+                self.x += 1
+                if self.x >= height - 1:
+                    self.x = 1
+
 
 class Board:
     def __init__(self, blizzards: list[Blizzard], height, width):
@@ -39,7 +58,7 @@ class Board:
                 if len(local_blizzards) == 0:
                     rval.append('.')
                 elif len(local_blizzards) > 1 and len(local_blizzards) < 10:
-                    rval.append(len(local_blizzards))
+                    rval.append(str(len(local_blizzards)))
                 elif len(local_blizzards) >= 10:
                     rval.append('*')
                 elif len(local_blizzards) == 1:
@@ -64,6 +83,9 @@ class Board:
                 rval.append(blizzard)
         return rval
 
+    def move_all(self):
+        for blizzard in self.blizzards:
+            blizzard.move(self.width, self.height)
 
 def parse_puzzle_input(data: list[str]) -> Board:
     blizzards = []
@@ -91,6 +113,9 @@ def part_one(filename):
     data = read_puzzle_input(filename)
     board = parse_puzzle_input(data)
     print(board)
+    for _ in range(10):
+        board.move_all()
+        print(board)
     return -1
 
 
@@ -105,6 +130,7 @@ short_filename = f'Day_{day_of_month}_short_input.txt'
 short_filename_two = f'Day_{day_of_month}_short_input_two.txt'
 print(f'Answer part one: {part_one(short_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
+
 
 # class Test(unittest.TestCase):
 #     def test_part_one(self):
