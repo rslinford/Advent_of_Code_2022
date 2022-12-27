@@ -205,25 +205,40 @@ def part_one(filename):
 
 def part_two(filename):
     data = read_puzzle_input(filename)
-    return -1
+    elves = parse_puzzle_input(data)
+    board = Board(elves)
+    print('Initial State')
+    print(board)
+    round = 0
+    while True:
+        round += 1
+        before = board.__repr__()
+        board.spread_out()
+        after = board.__repr__()
+        if before == after:
+            break
+        board.rotate_search_order()
+        print(f'End Round {round}')
+        print(board)
+    return round
 
 
 day_of_month = '23'
 long_filename = f'Day_{day_of_month}_long_input.txt'
 short_filename = f'Day_{day_of_month}_short_input.txt'
 short_filename_two = f'Day_{day_of_month}_short_input_two.txt'
-print(f'Answer part one: {part_one(short_filename_two)}')
-print(f'Answer part two: {part_two(short_filename)}')
+# print(f'Answer part one: {part_one(short_filename_two)}')
+# print(f'Answer part two: {part_two(long_filename)}')
 
 
 class Test(unittest.TestCase):
     def test_part_one(self):
         self.assertEqual(110, part_one(short_filename_two))
-        self.assertEqual(-1, part_one(long_filename))
+        self.assertEqual(3925, part_one(long_filename))
 
     def test_part_two(self):
-        self.assertEqual(-1, part_two(short_filename))
-        self.assertEqual(-1, part_two(long_filename))
+        self.assertEqual(20, part_two(short_filename_two))
+        self.assertEqual(903, part_two(long_filename))
 
 
 class TestBoard(unittest.TestCase):
