@@ -1,4 +1,6 @@
+import math
 import unittest
+from copy import copy
 from dataclasses import dataclass
 from enum import Enum, auto
 
@@ -7,6 +9,9 @@ def read_puzzle_input(filename):
     with open(filename, 'r') as f:
         data = f.read().strip().split('\n')
     return data
+
+
+MAX_DEPTH = 300
 
 
 class Direction(Enum):
@@ -41,29 +46,31 @@ class Blizzard:
                 if self.x >= height - 1:
                     self.x = 1
 
+
 @dataclass
 class Expedition:
-    x:int
-    y:int
+    x: int
+    y: int
+
 
 class Board:
     def __init__(self, blizzards: list[Blizzard], height, width):
+        self.min_path_length = math.inf
         self.blizzards = blizzards
         self.height = height
         self.width = width
-        self.expedition = Expedition(1, 0)
         self.goal = (self.width - 2, self.height - 1)
 
-    def __repr__(self):
-        rval = []
-        if self.expedition.x == 1 and self.expedition.y == 0:
+    def render(self, expedition, depth):
+        rval = [f'=== Depth {depth} ===\n']
+        if expedition.x == 1 and expedition.y == 0:
             rval.append('#E' + ('#' * (self.width - 2)) + '\n')
         else:
             rval.append('#.' + ('#' * (self.width - 2)) + '\n')
         for y in range(1, self.height - 1):
             rval.append('#')
             for x in range(1, self.width - 1):
-                if self.expedition.x == x and self.expedition.y == y:
+                if expedition.x == x and expedition.y == y:
                     rval.append('E')
                     continue
                 local_blizzards = self.blizzards_at(x, y)
@@ -84,7 +91,7 @@ class Board:
                         case Direction.EAST:
                             rval.append('>')
             rval.append('#\n')
-        if self.goal ==  (self.expedition.x, self.expedition.y):
+        if self.goal == (expedition.x, expedition.y):
             rval.append('#' * (self.width - 2) + 'E#')
         else:
             rval.append('#' * (self.width - 2) + '.#')
@@ -98,9 +105,74 @@ class Board:
                 rval.append(blizzard)
         return rval
 
-    def move_all(self):
+    def free_of_blizzards(self, x, y):
+        return len(self.blizzards_at(x, y)) == 0
+
+    def move_blizzards(self):
         for blizzard in self.blizzards:
             blizzard.move(self.width, self.height)
+
+    def move(self, expedition = Expedition(1, 0), depth = 0):
+        self.move_blizzards()
+        self.move_down(copy(expedition), depth)
+        self.move_right(copy(expedition), depth)
+        self.move_up(copy(expedition), depth)
+        self.move_left(copy(expedition), depth)
+
+    def move_down(self, expedition, depth):
+        if depth >= self.min_path_length or depth >= MAX_DEPTH:
+            return
+        if (expedition.y < self.height - 2 and self.free_of_blizzards(expedition.x, expedition.y + 1)) or \
+                self.goal == (expedition.x, expedition.y + 1):
+            expedition.y += 1
+            depth += 1
+            print(self.render(expedition, depth))
+            if self.goal == (expedition.x, expedition.y):
+                if self.min_path_length > depth:
+                    self.min_path_length = depth
+                    print(f'******* New minimum path found: {depth} *******')
+                return
+            self.move_blizzards()
+            self.move(expedition, depth)
+        else:
+            return
+
+    def move_right(self, expedition, depth):
+        if depth >= self.min_path_length or depth >= MAX_DEPTH:
+            return
+        if expedition.x < self.width - 2 and self.free_of_blizzards(expedition.x + 1, expedition.y):
+            expedition.x += 1
+            depth += 1
+            print(self.render(expedition, depth))
+            self.move_blizzards()
+            self.move(expedition, depth)
+        else:
+            return
+
+    def move_up(self, expedition, depth):
+        if depth >= self.min_path_length or depth >= MAX_DEPTH:
+            return
+        if expedition.y > 1 and self.free_of_blizzards(expedition.x, expedition.y - 1):
+            expedition.y -= 1
+            depth += 1
+            print(self.render(expedition, depth))
+            self.move_blizzards()
+            self.move(expedition, depth)
+        else:
+            return
+
+    def move_left(self, expedition, depth):
+        if depth >= self.min_path_length or depth >= MAX_DEPTH:
+            return
+        if expedition.x > 1 and self.free_of_blizzards(expedition.x - 1, expedition.y):
+            expedition.x -= 1
+            depth += 1
+            print(self.render(expedition, depth))
+            self.move_blizzards()
+            self.move(expedition, depth)
+        else:
+            return
+
 
 def parse_puzzle_input(data: list[str]) -> Board:
     blizzards = []
@@ -127,10 +199,9 @@ def parse_puzzle_input(data: list[str]) -> Board:
 def part_one(filename):
     data = read_puzzle_input(filename)
     board = parse_puzzle_input(data)
-    print(board)
-    for _ in range(10):
-        board.move_all()
-        print(board)
+    print('Initial State')
+    print(board.render(Expedition(1, 0), 0))
+    board.move()
     return -1
 
 
@@ -143,7 +214,7 @@ day_of_month = '24'
 long_filename = f'Day_{day_of_month}_long_input.txt'
 short_filename = f'Day_{day_of_month}_short_input.txt'
 short_filename_two = f'Day_{day_of_month}_short_input_two.txt'
-print(f'Answer part one: {part_one(short_filename)}')
+print(f'Answer part one: {part_one(short_filename_two)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
 
@@ -160,10 +231,11 @@ class TestBoard(unittest.TestCase):
     def test_repr(self):
         data = read_puzzle_input(short_filename)
         board = parse_puzzle_input(data)
-        self.assertEqual("#.#####\n"
+        self.assertEqual("=== Depth 0 ===\n"
+                         "#E#####\n"
                          "#.....#\n"
                          "#>....#\n"
                          "#.....#\n"
                          "#...v.#\n"
                          "#.....#\n"
-                         "#####.#", board.__repr__())
+                         "#####.#", board.render(Expedition(1, 0), 0))
