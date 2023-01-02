@@ -11,7 +11,7 @@ def read_puzzle_input(filename):
     return data
 
 
-MAX_DEPTH = 300
+MAX_DEPTH = 400
 
 
 class Direction(Enum):
@@ -214,7 +214,7 @@ day_of_month = '24'
 long_filename = f'Day_{day_of_month}_long_input.txt'
 short_filename = f'Day_{day_of_month}_short_input.txt'
 short_filename_two = f'Day_{day_of_month}_short_input_two.txt'
-print(f'Answer part one: {part_one(short_filename_two)}')
+print(f'Answer part one: {part_one(long_filename)}')
 print(f'Answer part two: {part_two(short_filename)}')
 
 
