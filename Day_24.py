@@ -1,4 +1,5 @@
 import math
+import sys
 import unittest
 from copy import copy
 from dataclasses import dataclass
@@ -11,7 +12,8 @@ def read_puzzle_input(filename):
     return data
 
 
-MAX_DEPTH = 400
+MAX_DEPTH = 4000
+sys.setrecursionlimit(MAX_DEPTH * 2)
 
 
 class Direction(Enum):
@@ -62,6 +64,8 @@ class Board:
         self.goal = (self.width - 2, self.height - 1)
 
     def render(self, expedition, depth):
+        if depth % 500 != 0:
+            return f'<snip depth({depth}) min_path({self.min_path_length})>'
         rval = [f'=== Depth {depth} ===\n']
         if expedition.x == 1 and expedition.y == 0:
             rval.append('#E' + ('#' * (self.width - 2)) + '\n')
@@ -112,7 +116,7 @@ class Board:
         for blizzard in self.blizzards:
             blizzard.move(self.width, self.height)
 
-    def move(self, expedition = Expedition(1, 0), depth = 0):
+    def move(self, expedition=Expedition(1, 0), depth=0):
         self.move_blizzards()
         self.move_down(copy(expedition), depth)
         self.move_right(copy(expedition), depth)
@@ -195,7 +199,7 @@ def parse_puzzle_input(data: list[str]) -> Board:
     width = len(data[0])
     return Board(blizzards, height, width)
 
-
+# min_path == 501 after 12 hours
 def part_one(filename):
     data = read_puzzle_input(filename)
     board = parse_puzzle_input(data)

@@ -9,7 +9,7 @@ def read_puzzle_input(filename):
 
 
 def parse_ranges(line: str):
-    result = re.search('^(\d+)-(\d+),(\d+)-(\d+)', line)
+    result = re.search(r'^(\d+)-(\d+),(\d+)-(\d+)', line)
     e1_min = int(result.group(1))
     e1_max = int(result.group(2))
     e2_min = int(result.group(3))
