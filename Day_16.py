@@ -29,7 +29,7 @@ def read_puzzle_input(filename):
 def parse_lines(data: list[str]) -> list[Valve]:
     rval = []
     for line in data:
-        result = re.search('Valve (..) has flow rate=(\d+); tunnels? leads? to valves? (.+)', line)
+        result = re.search(r'Valve (..) has flow rate=(\d+); tunnels? leads? to valves? (.+)', line)
         label = result.group(1)
         flow_rate = int(result.group(2))
         neighbors = result.group(3)
