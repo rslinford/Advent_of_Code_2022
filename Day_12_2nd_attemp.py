@@ -25,6 +25,14 @@ class Graph:
                     return x, y
         assert False
 
+    def find_starts(self):
+        starts = []
+        for y, row in enumerate(self.grid):
+            for x, col in enumerate(row):
+                if col == 'S' or col == 'a':
+                    starts.append((x, y))
+        return starts
+
     def find_end(self):
         for y, row in enumerate(self.grid):
             for x, col in enumerate(row):
@@ -72,9 +80,7 @@ class Graph:
         return rval
 
 
-def bfs(graph):
-    start = graph.find_start()
-    end = graph.find_end()
+def bfs(graph, start, end):
     frontier = deque()
     frontier.append(start)
     came_from = dict()
@@ -90,9 +96,9 @@ def bfs(graph):
     return came_from
 
 
-def reconstruct_path(graph, came_from):
-    start = graph.find_start()
-    end = graph.find_end()
+def reconstruct_path(came_from, start, end):
+    if end not in came_from:
+        return None
     current = end
     path = []
     while current != start:
@@ -106,14 +112,24 @@ def part_one(filename):
     data = read_puzzle_input(filename)
     grid = parse_data(data)
     graph = Graph(grid)
-    came_from = bfs(graph)
-    path = reconstruct_path(graph, came_from)
+    came_from = bfs(graph, graph.find_start(), graph.find_end())
+    path = reconstruct_path(came_from, graph.find_start(), graph.find_end())
     return len(path)
 
 
 def part_two(filename):
     data = read_puzzle_input(filename)
-    return -1
+    grid = parse_data(data)
+    graph = Graph(grid)
+    starts = graph.find_starts()
+    end = graph.find_end()
+    shortest = float('inf')
+    for start in starts:
+        came_from = bfs(graph, start, end)
+        path = reconstruct_path(came_from, start, end)
+        if path:
+            shortest = min(shortest, len(path))
+    return shortest
 
 
 class Test(unittest.TestCase):
@@ -122,5 +138,5 @@ class Test(unittest.TestCase):
         self.assertEqual(31, part_one('Day_12_short_input.txt'))
 
     def test_part_two(self):
-        self.assertEqual(-1, part_two('Day_12_input.txt'))
-        self.assertEqual(-1, part_two('Day_12_short_input.txt'))
+        self.assertEqual(418, part_two('Day_12_input.txt'))
+        self.assertEqual(29, part_two('Day_12_short_input.txt'))
