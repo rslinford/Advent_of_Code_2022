@@ -45,7 +45,7 @@ class GasJets:
         self.gas_jets = gas_jets
         self.next = 0
 
-    def next_jet(self):
+    def get(self):
         c = self.gas_jets[self.next % len(self.gas_jets)]
         self.next += 1
         match c:
@@ -59,11 +59,14 @@ class GasJets:
 
 class Space:
     def __init__(self):
+        self.debug = False
         self.settled_rocks = set()
         self.falling_rocks = set()
         self.spawn_count = 0
 
     def print(self):
+        if not self.debug:
+            return
         max_y = self.find_max_y()
         for y in range(max_y, -1, -1):
             print('|', end='')
@@ -73,7 +76,7 @@ class Space:
                 elif (x, y) in self.falling_rocks:
                     print('@', end='')
                 else:
-                    print(' ', end='')
+                    print('.', end='')
             print('|')
         print('+-------+')
 
@@ -133,28 +136,32 @@ class Space:
             assert False
 
     def spawn_new_rock(self):
-        for coordinate in self.new_rock_coordinates(self.spawn_count % 5, self.find_max_y() + 3):
+        for coordinate in self.new_rock_coordinates(self.spawn_count % 5, self.find_max_y() + 4):
             self.falling_rocks.add(coordinate)
         self.spawn_count += 1
 
+
 def part_one(filename):
     data = read_puzzle_input(filename)
-    gas_jets = GasJets(parse_data(data))
+    jets = GasJets(parse_data(data))
     space = Space()
 
-    while True:
+    for _ in range(2022):
         space.spawn_new_rock()
         space.print()
-        match gas_jets.next_jet():
-            case Dir.LEFT:
-                space.blow_left()
-            case Dir.RIGHT:
-                space.blow_right()
-        space.print()
-        space.fall_down()
-        space.print()
+        while True:
+            match jets.get():
+                case Dir.LEFT:
+                    space.blow_left()
+                case Dir.RIGHT:
+                    space.blow_right()
+            space.print()
+            if not space.fall_down():
+                space.print()
+                break
+            space.print()
 
-    return -1
+    return space.find_max_y() + 1
 
 
 def part_two(filename):
@@ -165,8 +172,8 @@ def part_two(filename):
 
 class Test(unittest.TestCase):
     def test_part_one(self):
-        # self.assertEqual(-1, part_one('Day_17_long_input.txt'))
-        self.assertEqual(-1, part_one('Day_17_short_input.txt'))
+        self.assertEqual(-1, part_one('Day_17_long_input.txt'))
+        # self.assertEqual(3068, part_one('Day_17_short_input.txt'))
 
     def test_part_two(self):
         self.assertEqual(-1, part_two('Day_17_long_input.txt'))
