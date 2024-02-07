@@ -172,7 +172,7 @@ def part_two(filename):
 
 class Test(unittest.TestCase):
     def test_part_one(self):
-        self.assertEqual(-1, part_one('Day_17_long_input.txt'))
+        self.assertEqual(3067, part_one('Day_17_long_input.txt'))
         # self.assertEqual(3068, part_one('Day_17_short_input.txt'))
 
     def test_part_two(self):
